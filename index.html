@@ -13,7 +13,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
 <script>
-firebase.initializeApp({apiKey:"AIzaSyCWnWWaxQ5H6Rzi6eda1wvYgtk60Hd6dxc",projectId:"iashopee7",messagingSenderId:"784750676949",appId:"1:784750676949:web:0582600dcdd645a79b8b5c"});
+firebase.initializeApp({apiKey:"AIzaSyCWnWWaxQ5H6Rzi6eda1wvYgtk60Hd6dxc",authDomain:"iashopee7.firebaseapp.com",projectId:"iashopee7",messagingSenderId:"784750676949",appId:"1:784750676949:web:0582600dcdd645a79b8b5c"});
 var messaging=null;try{messaging=firebase.messaging();}catch(e){}
 var swReg=null;
 if('serviceWorker' in navigator){
@@ -1425,6 +1425,13 @@ function adicionarAgenda(){
   });
 }
 
+
+function enviarAgendaWpp(id){
+  var ag=agenda.find(function(a){return a.id===id;});
+  if(!ag||!ag.msg)return;
+  window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(ag.msg),'_blank');
+}
+
 function renderAgenda(){
   svpSet('svp_agenda',agenda);
   var el=document.getElementById('lista-agenda');if(!el)return;
@@ -1432,7 +1439,7 @@ function renderAgenda(){
   el.innerHTML=agenda.map(function(a){
     var destLabel=(a.dest==='tg'?'✈️ TG':a.dest==='ambos'?'✈️+💬 Ambos':'💬 WPP');
     return'<div class="agenda-item"><div><div class="agenda-hora">'+a.hora+' '+destLabel+'</div><div class="agenda-desc">'+(a.desc||'Agendamento')+'</div>'
-      +(a.msg?'<button onclick="window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(''+a.msg.replace(/'/g,"\'").replace(/\n/g,'\\n')+''),'_blank')" style="background:#25D366;color:white;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px;">💬 Enviar WPP</button>':'')
+      +(a.msg?'<button onclick="enviarAgendaWpp('+a.id+')" style="background:#25D366;color:white;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px;">💬 Enviar WPP</button>':'')
       +'</div>'
       +'<span class="'+(a.status==='enviado'?'ag-enviado':'ag-pendente')+'">'+(a.status==='enviado'?'Enviado':'Pendente')+'</span>'
       +'<button class="ag-del" onclick="agenda=agenda.filter(function(x){return x.id!=='+a.id+'});renderAgenda()">🗑</button></div>';
@@ -1460,21 +1467,21 @@ function agVerificar(){
 }
 
 // INICIALIZAR
-carregarCfg();renderTpls();verificarSessao();
+carregarCfg();
 
 document.addEventListener('DOMContentLoaded',function(){
-  document.getElementById('btn-entrar').onclick=fazerLogin;
-  document.getElementById('inp-senha').onkeydown=function(e){if(e.key==='Enter')fazerLogin();};
+  var _be=document.getElementById('btn-entrar');if(_be)_be.onclick=fazerLogin;
+  var _is=document.getElementById('inp-senha');if(_is)_is.onkeydown=function(e){if(e.key==='Enter')fazerLogin();};
   document.getElementById('btn-comprar').onclick=function(){window.open('https://pay.kiwify.com.br/xQkKAm4','_blank');};
   document.getElementById('btn-ir-admin').onclick=irParaAdmin;
-  document.getElementById('btn-login-admin').onclick=loginAdmin;
-  document.getElementById('inp-admin').onkeydown=function(e){if(e.key==='Enter')loginAdmin();};
+  var _bla=document.getElementById('btn-login-admin');if(_bla)_bla.onclick=loginAdmin;
+  var _ia=document.getElementById('inp-admin');if(_ia)_ia.onkeydown=function(e){if(e.key==='Enter')loginAdmin();};
   document.getElementById('btn-voltar-login').onclick=voltarLogin;
   document.getElementById('btn-logout').onclick=fazerLogout;
   document.getElementById('btn-chat-send').onclick=enviarChat;
   document.getElementById('chat-inp').onkeydown=function(e){if(e.key==='Enter')enviarChat();};
 
-  updStats();renderVitrine();renderAgenda();renderHistoricoAfl();npRender();agAtualizarSelect();
+  updStats();renderVitrine();renderAgenda();renderHistoricoAfl();npRender();agAtualizarSelect();renderTpls();verificarSessao();
 
   // Carregar config Telegram
   var t=localStorage.getItem('tg_token');
