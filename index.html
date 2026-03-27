@@ -10,19 +10,8 @@
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="default"/>
 <meta name="apple-mobile-web-app-title" content="Shopee Viral Pro"/>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.0/firebase-messaging-compat.js"></script>
-<script>
-firebase.initializeApp({apiKey:"AIzaSyCWnWWaxQ5H6Rzi6eda1wvYgtk60Hd6dxc",projectId:"iashopee7",messagingSenderId:"784750676949",appId:"1:784750676949:web:0582600dcdd645a79b8b5c"});
-var messaging=null;try{messaging=firebase.messaging();}catch(e){}
-var swReg=null;
-if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('/sw.js').then(function(reg){
-    swReg=reg;
-    if(messaging){messaging.getToken({vapidKey:'BHFRbmUYJOoMaGtf3EptQ1I2eMp75FkaVBl7sQ68TRBxv9-ZzmwxOEhsM2GiaFClZAT7onn2fjnrPg58lVTkWTk',serviceWorkerRegistration:reg}).then(function(t){if(t)localStorage.setItem('fcm_token',t);}).catch(function(){});}
-  });
-}
-</script>
+<!-- Firebase removido -->
+<script>var swReg=null;</script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{--r:#EE4D2D;--g:#25D366;--dk:#1a1a2e;--bg:#fff8f6;--card:#fff;--borda:#ffe0d6;}
@@ -1251,12 +1240,13 @@ function tgMontarOferta(prod){
   if(prod.desconto)m+=' — *'+prod.desconto+'*';
   m+='\n\n';
   if(prod.extra)m+=prod.extra+'\n\n';
+  m+='🛒 *Compre agora:*\n'+prod.link+'\n\n✅ Frete grátis disponível!\n⏰ Estoque limitado!\n\n🟠 Mensal R$47: '+TGCFG.LINK_MENSAL;
   return m;
 }
 
 // Produtos Telegram
 function npGetLista(){return JSON.parse(localStorage.getItem('tg_produtos')||'[]');}
-function npSalvarLista(lista){localStorage.setItem('tg_produtos',JSON.stringify(lista));npRender();autoRenderProds();manualRenderProds();agAtualizarSelect();}
+function npSalvarLista(lista){localStorage.setItem('tg_produtos',JSON.stringify(lista));npRender();autoRenderProds();manualRenderProds();}
 function npSalvar(){
   var nome=document.getElementById('np-nome').value.trim();
   var link=document.getElementById('np-link').value.trim();
@@ -1365,7 +1355,7 @@ function agSetDest(d){
   ['wpp','tg','ambos'].forEach(function(x){document.getElementById('ag-dest-'+x)?.classList.toggle('on',x===d);});
 }
 
-function agAtualizarSelect(){
+function {
   var sel=document.getElementById('ag-produto-sel');if(!sel)return;
   var lista=npGetLista();
   sel.innerHTML='<option value="">-- Selecionar produto --</option>'+lista.map(function(p){return'<option value="'+p.id+'">'+p.emoji+' '+p.nome+' · '+p.preco+'</option>';}).join('');
@@ -1424,6 +1414,10 @@ function adicionarAgenda(){
   });
 }
 
+function enviarAgendaWpp(id){
+  var ag=agenda.find(function(a){return a.id===id;});
+  if(ag&&ag.msg)window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(ag.msg),'_blank');
+}
 function renderAgenda(){
   svpSet('svp_agenda',agenda);
   var el=document.getElementById('lista-agenda');if(!el)return;
@@ -1431,7 +1425,7 @@ function renderAgenda(){
   el.innerHTML=agenda.map(function(a){
     var destLabel=(a.dest==='tg'?'✈️ TG':a.dest==='ambos'?'✈️+💬 Ambos':'💬 WPP');
     return'<div class="agenda-item"><div><div class="agenda-hora">'+a.hora+' '+destLabel+'</div><div class="agenda-desc">'+(a.desc||'Agendamento')+'</div>'
-      +(a.msg?'<button onclick="window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(''+a.msg.replace(/'/g,"\'").replace(/\n/g,'\\n')+''),'_blank')" style="background:#25D366;color:white;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px;">💬 Enviar WPP</button>':'')
+      +(a.msg?'<button onclick="enviarAgendaWpp('+a.id+')" style="background:#25D366;color:white;border:none;border-radius:8px;padding:4px 10px;font-size:11px;font-weight:700;cursor:pointer;margin-top:4px;">💬 Enviar WPP</button>':'')
       +'</div>'
       +'<span class="'+(a.status==='enviado'?'ag-enviado':'ag-pendente')+'">'+(a.status==='enviado'?'Enviado':'Pendente')+'</span>'
       +'<button class="ag-del" onclick="agenda=agenda.filter(function(x){return x.id!=='+a.id+'});renderAgenda()">🗑</button></div>';
@@ -1459,9 +1453,10 @@ function agVerificar(){
 }
 
 // INICIALIZAR
-carregarCfg();renderTpls();verificarSessao();
+carregarCfg();
 
 document.addEventListener('DOMContentLoaded',function(){
+  try{
   document.getElementById('btn-entrar').onclick=fazerLogin;
   document.getElementById('inp-senha').onkeydown=function(e){if(e.key==='Enter')fazerLogin();};
   document.getElementById('btn-comprar').onclick=function(){window.open('https://pay.kiwify.com.br/xQkKAm4','_blank');};
@@ -1473,7 +1468,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('btn-chat-send').onclick=enviarChat;
   document.getElementById('chat-inp').onkeydown=function(e){if(e.key==='Enter')enviarChat();};
 
-  updStats();renderVitrine();renderAgenda();renderHistoricoAfl();npRender();agAtualizarSelect();
+  updStats();renderVitrine();renderAgenda();renderHistoricoAfl();npRender();renderTpls();verificarSessao();
 
   // Carregar config Telegram
   var t=localStorage.getItem('tg_token');
