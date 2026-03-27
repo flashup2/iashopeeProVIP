@@ -1240,7 +1240,7 @@ function tgMontarOferta(prod){
   if(prod.desconto)m+=' — *'+prod.desconto+'*';
   m+='\n\n';
   if(prod.extra)m+=prod.extra+'\n\n';
-  m+='🛒 *Compre agora:*\n'+prod.link+'\n\n✅ Frete grátis disponível!\n⏰ Estoque limitado!\n\n🟠 Mensal R$47: '+TGCFG.LINK_MENSAL;
+  m+='🛒 *Compre agora:*\n'+prod.link+'\n\n✅ Frete grátis disponível!\n⏰ Estoque limitado!';
   return m;
 }
 
@@ -1355,7 +1355,7 @@ function agSetDest(d){
   ['wpp','tg','ambos'].forEach(function(x){document.getElementById('ag-dest-'+x)?.classList.toggle('on',x===d);});
 }
 
-function {
+function agAtualizarSelect(){
   var sel=document.getElementById('ag-produto-sel');if(!sel)return;
   var lista=npGetLista();
   sel.innerHTML='<option value="">-- Selecionar produto --</option>'+lista.map(function(p){return'<option value="'+p.id+'">'+p.emoji+' '+p.nome+' · '+p.preco+'</option>';}).join('');
@@ -1468,7 +1468,7 @@ document.addEventListener('DOMContentLoaded',function(){
   document.getElementById('btn-chat-send').onclick=enviarChat;
   document.getElementById('chat-inp').onkeydown=function(e){if(e.key==='Enter')enviarChat();};
 
-  updStats();renderVitrine();renderAgenda();renderHistoricoAfl();npRender();renderTpls();verificarSessao();
+  updStats();renderVitrine();renderAgenda();renderHistoricoAfl();npRender();agAtualizarSelect();renderTpls();verificarSessao();
 
   // Carregar config Telegram
   var t=localStorage.getItem('tg_token');
