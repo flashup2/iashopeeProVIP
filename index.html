@@ -1580,26 +1580,51 @@ async function enviarChat(){
   var d2=document.createElement('div'); d2.className='chat-msg chat-ia'; d2.id='typing-msg'; d2.textContent='...'; wrap.appendChild(d2);
   wrap.scrollTop=wrap.scrollHeight;
   try{
-    var chave=localStorage.getItem('openrouter_key')||'';
-    var resp='';
-    if(chave){
-      var r=await fetch('https://openrouter.ai/api/v1/chat/completions',{
-        method:'POST',
-        headers:{'Authorization':'Bearer '+chave,'Content-Type':'application/json','HTTP-Referer':window.location.href,'X-Title':'Shopee Viral Pro'},
-        body:JSON.stringify({model:'mistralai/mistral-7b-instruct:free',messages:[{role:'system',content:'Voce e especialista em vendas Shopee, afiliados e marketing digital no Brasil. Seja direta, pratica, use emojis. Responda em portugues.'}].concat(chatHistorico.slice(-8)),max_tokens:500})
-      });
-      var dd=await r.json();
-      resp=(dd.choices&&dd.choices[0]&&dd.choices[0].message&&dd.choices[0].message.content)||'Sem resposta.';
-    } else {
-      resp='Configure sua chave OpenRouter em Telegram > Config para usar o Chat IA!';
+    // Reutiliza chamarIA com fallback automatico
+    var sysMsg = 'Voce e especialista em vendas Shopee, afiliados e marketing digital no Brasil. Seja direta, pratica, use emojis. Responda em portugues.';
+    var chave = localStorage.getItem('openrouter_key')||'';
+    if(!chave){ throw new Error('Configure sua chave OpenRouter em Telegram > Config!'); }
+
+    var MODELS = [
+      'openrouter/auto',
+      'meta-llama/llama-3.3-70b-instruct:free',
+      'meta-llama/llama-3.1-8b-instruct:free',
+      'google/gemma-3-12b-it:free',
+      'mistralai/mistral-small-3.1-24b-instruct:free',
+      'deepseek/deepseek-r1-distill-llama-70b:free'
+    ];
+    var resp = ''; var lastErr = null;
+    for(var mi=0; mi<MODELS.length; mi++){
+      try{
+        var r=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+          method:'POST',
+          headers:{'Authorization':'Bearer '+chave,'Content-Type':'application/json','HTTP-Referer':window.location.href,'X-Title':'Shopee Viral Pro'},
+          body:JSON.stringify({model:MODELS[mi],messages:[{role:'system',content:sysMsg}].concat(chatHistorico.slice(-8)),max_tokens:500})
+        });
+        var dd=await r.json();
+        if(!r.ok){
+          var em=(dd.error&&dd.error.message)?dd.error.message:'Erro';
+          if(r.status===400||r.status===404||em.indexOf('No endpoints')!==-1||em.indexOf('not a valid model')!==-1||em.indexOf('not found')!==-1){lastErr=new Error(em);continue;}
+          throw new Error(em);
+        }
+        resp=(dd.choices&&dd.choices[0]&&dd.choices[0].message&&dd.choices[0].message.content)||'';
+        if(resp) break;
+        lastErr=new Error('Resposta vazia de '+MODELS[mi]);
+      }catch(ex){
+        if(ex.message&&(ex.message.indexOf('No endpoints')!==-1||ex.message.indexOf('not a valid model')!==-1||ex.message.indexOf('not found')!==-1)){lastErr=ex;continue;}
+        throw ex;
+      }
     }
+    if(!resp) throw lastErr||new Error('Nenhum modelo disponivel.');
+
     var typing=document.getElementById('typing-msg'); if(typing) typing.remove();
     chatHistorico.push({role:'assistant',content:resp});
     var d3=document.createElement('div'); d3.className='chat-msg chat-ia'; d3.textContent=resp; wrap.appendChild(d3);
     wrap.scrollTop=wrap.scrollHeight;
   }catch(e){
     var typing2=document.getElementById('typing-msg'); if(typing2) typing2.remove();
-    var d4=document.createElement('div'); d4.className='chat-msg chat-ia'; d4.textContent='Erro. Configure sua chave OpenRouter em Telegram > Config.'; wrap.appendChild(d4);
+    var d4=document.createElement('div'); d4.className='chat-msg chat-ia'; d4.textContent='Erro: '+e.message; wrap.appendChild(d4);
+    wrap.scrollTop=wrap.scrollHeight;
   }
 }
 
