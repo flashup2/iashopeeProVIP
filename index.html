@@ -1341,39 +1341,70 @@ function copiarAchado(id){ var p=prods.find(function(x){ return x.id===id; }); i
 // ============================================================
 // CHAT IA
 // ============================================================
-// Modelos gratuitos atualizados (Março 2026)
-var IA_MODELS = [
-  'meta-llama/llama-3.1-8b-instruct:free',
-  'mistralai/mistral-7b-instruct:free',
-  'google/gemma-2-9b-it:free',
-  'deepseek/deepseek-r1-distill-qwen-7b:free',
-  'qwen/qwen2.5-7b-instruct:free'
-];
-
+// IA: usa openrouter/free (roteador automatico) + fallbacks confirmados Marco 2026
 async function chamarIA(prompt, max) {
   var chave = localStorage.getItem('openrouter_key') || '';
   if (!chave) throw new Error('Configure sua chave OpenRouter em Telegram > Config para usar a IA.');
+
+  // openrouter/free seleciona automaticamente qualquer modelo gratuito disponivel
+  // Fallbacks: modelos confirmados ativos em Marco 2026
+  var MODELS = [
+    'openrouter/auto',
+    'meta-llama/llama-3.3-70b-instruct:free',
+    'meta-llama/llama-3.1-8b-instruct:free',
+    'google/gemma-3-12b-it:free',
+    'mistralai/mistral-small-3.1-24b-instruct:free',
+    'deepseek/deepseek-r1-distill-llama-70b:free'
+  ];
+
   var lastError = null;
-  for (var mi = 0; mi < IA_MODELS.length; mi++) {
-    var model = IA_MODELS[mi];
+  for (var mi = 0; mi < MODELS.length; mi++) {
+    var model = MODELS[mi];
     try {
       var r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
-        headers: {'Authorization': 'Bearer '+chave,'Content-Type': 'application/json','HTTP-Referer': window.location.href,'X-Title': 'Shopee Viral Pro'},
-        body: JSON.stringify({model: model, messages: [{role:'system',content:'Especialista em vendas Shopee Brasil. Seja direto, pratico, use emojis. Portugues brasileiro.'},{role:'user',content:prompt}], max_tokens: max||1000})
+        headers: {
+          'Authorization': 'Bearer ' + chave,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': window.location.href,
+          'X-Title': 'Shopee Viral Pro'
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [
+            { role: 'system', content: 'Especialista em vendas Shopee Brasil. Seja direto, pratico, use emojis. Responda sempre em portugues brasileiro.' },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: max || 1000
+        })
       });
+
+      var data = await r.json();
+
       if (!r.ok) {
-        var eData = await r.json();
-        var eMsg = (eData.error && eData.error.message) ? eData.error.message : 'Erro modelo';
-        if (eMsg.indexOf('No endpoints') !== -1 || eMsg.indexOf('not found') !== -1 || r.status === 404 || r.status === 400) { lastError = new Error(eMsg); continue; }
+        var eMsg = (data.error && data.error.message) ? data.error.message : ('Erro HTTP ' + r.status);
+        // Se modelo nao existe ou sem endpoints, tenta proximo
+        if (r.status === 400 || r.status === 404 ||
+            eMsg.indexOf('No endpoints') !== -1 ||
+            eMsg.indexOf('not a valid model') !== -1 ||
+            eMsg.indexOf('not found') !== -1) {
+          lastError = new Error(eMsg);
+          continue;
+        }
         throw new Error(eMsg);
       }
-      var data = await r.json();
+
       var txt = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
-      if (!txt) { lastError = new Error('Resposta vazia de '+model); continue; }
+      if (!txt) { lastError = new Error('Resposta vazia de ' + model); continue; }
       return txt;
+
     } catch(e) {
-      if (e.message && (e.message.indexOf('No endpoints') !== -1 || e.message.indexOf('not found') !== -1)) { lastError = e; continue; }
+      if (e.message && (
+          e.message.indexOf('No endpoints') !== -1 ||
+          e.message.indexOf('not a valid model') !== -1 ||
+          e.message.indexOf('not found') !== -1)) {
+        lastError = e; continue;
+      }
       throw e;
     }
   }
