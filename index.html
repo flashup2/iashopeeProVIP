@@ -200,9 +200,163 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 .tg-tab.on{background:#0088cc;color:white;border-color:#0088cc;}
 .tg-panel{display:none;}
 .tg-panel.on{display:block;}
+/* Aviso SW */
+.sw-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;margin-bottom:10px;}
+.sw-badge.ok{background:#e8f5e1;color:#1a6e35;}
+.sw-badge.warn{background:#fef8e1;color:#7a5800;}
+.sw-badge.err{background:#fff0eb;color:#b03000;}
 </style>
 </head>
 <body>
+
+<!-- ============================================================ -->
+<!-- SERVICE WORKER INLINE (blob) — roda em background            -->
+<!-- ============================================================ -->
+<script>
+// =====================================================================
+// SERVICE WORKER EMBUTIDO — registrado como blob URL
+// Mantém o bot Telegram rodando mesmo com a aba em background/fechada
+// =====================================================================
+const SW_CODE = `
+const CHANNEL = new BroadcastChannel('tg_bot_sw');
+let autoTimer = null;
+let autoConfig = null;
+let autoIdx = 0;
+
+self.addEventListener('message', (event) => {
+  const { type, payload } = event.data || {};
+  if (type === 'TG_START') {
+    autoConfig = payload;
+    autoIdx = 0;
+    clearTimer();
+    runLoop();
+    replyOk(event);
+  }
+  if (type === 'TG_STOP') {
+    clearTimer();
+    autoConfig = null;
+    replyOk(event);
+  }
+  if (type === 'TG_PING') {
+    if (event.ports && event.ports[0])
+      event.ports[0].postMessage({ ok: true, active: autoConfig !== null });
+  }
+  if (type === 'TG_UPDATE_PRODUTOS') {
+    if (autoConfig) autoConfig.produtos = payload.produtos;
+    replyOk(event);
+  }
+});
+
+function replyOk(event) {
+  if (event.ports && event.ports[0]) event.ports[0].postMessage({ ok: true });
+}
+
+function clearTimer() {
+  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
+}
+
+async function runLoop() {
+  if (!autoConfig) return;
+  await enviarProximo();
+  clearTimer();
+  autoTimer = setTimeout(runLoop, autoConfig.intervaloMin * 60 * 1000);
+}
+
+async function enviarProximo() {
+  if (!autoConfig) return;
+  const { token, canal, grupo, dest, produtos } = autoConfig;
+  const ativos = (produtos || []).filter(p => p.ativo);
+  if (!ativos.length) return;
+  const prod = ativos[autoIdx % ativos.length];
+  autoIdx++;
+  const texto = montarOferta(prod);
+  const targets = [];
+  if ((dest === 'canal' || dest === 'ambos') && canal) targets.push(canal);
+  if ((dest === 'grupo' || dest === 'ambos') && grupo) targets.push(grupo);
+  for (const chatId of targets) {
+    try {
+      const r = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ chat_id: chatId, text: texto, parse_mode: 'Markdown' }),
+        keepalive: true
+      });
+      const d = await r.json();
+      const msg = d.ok
+        ? '[SW] ✅ Enviado para ' + chatId + ': ' + prod.nome
+        : '[SW] ❌ Erro ' + chatId + ': ' + (d.description || 'desconhecido');
+      CHANNEL.postMessage({ type: 'TG_LOG', msg, level: d.ok ? 'ok' : 'err', ts: Date.now() });
+    } catch(e) {
+      CHANNEL.postMessage({ type: 'TG_LOG', msg: '[SW] ❌ Erro: ' + e.message, level: 'err', ts: Date.now() });
+    }
+  }
+}
+
+function montarOferta(prod) {
+  const e = prod.emoji || '🛍️';
+  let m = e + ' *OFERTA SHOPEE — ' + prod.nome.toUpperCase() + '*\n\n';
+  if (prod.precoD) m += '~~De: ' + prod.precoD + '~~\n';
+  m += '💰 *Por apenas: ' + prod.preco + '*';
+  if (prod.desconto) m += ' — *' + prod.desconto + '*';
+  m += '\n\n';
+  if (prod.extra) m += prod.extra + '\n\n';
+  m += '🛒 *Compre agora:*\n' + prod.link + '\n\n✅ Frete grátis disponível!\n⏰ Estoque limitado!';
+  return m;
+}
+
+self.addEventListener('install', () => self.skipWaiting());
+self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+`;
+
+// =====================================================================
+// Registra o SW via blob (funciona mesmo sem arquivo físico separado)
+// =====================================================================
+let swRegistration = null;
+let swSupported = false;
+let swChannel = null;
+
+async function registrarSW() {
+  if (!('serviceWorker' in navigator)) {
+    console.warn('[TG] Service Worker não suportado. Usando fallback.');
+    return false;
+  }
+  try {
+    const blob = new Blob([SW_CODE], { type: 'application/javascript' });
+    const swUrl = URL.createObjectURL(blob);
+    swRegistration = await navigator.serviceWorker.register(swUrl, { scope: '/' });
+    swSupported = true;
+    swChannel = new BroadcastChannel('tg_bot_sw');
+    swChannel.onmessage = (e) => {
+      if (e.data && e.data.type === 'TG_LOG') {
+        tgLogApp(e.data.msg, e.data.level);
+      }
+    };
+    console.log('[TG] Service Worker registrado com sucesso!');
+    return true;
+  } catch(err) {
+    // Blob SW pode ser bloqueado em alguns contextos (cross-origin, file://)
+    console.warn('[TG] Service Worker falhou:', err.message, '— usando fallback.');
+    return false;
+  }
+}
+
+async function swEnviarMensagem(type, payload) {
+  if (!swRegistration) return false;
+  const sw = swRegistration.active || swRegistration.waiting || swRegistration.installing;
+  if (!sw) return false;
+  return new Promise((resolve) => {
+    const ch = new MessageChannel();
+    ch.port1.onmessage = (e) => resolve(e.data);
+    sw.postMessage({ type, payload }, [ch.port2]);
+  });
+}
+
+// Inicia registro do SW assim que possível
+registrarSW().then(ok => {
+  window._swOk = ok;
+  setTimeout(atualizarBadgeSW, 500);
+});
+</script>
 
 <!-- TELA LOGIN -->
 <div id="tela-login">
@@ -689,6 +843,9 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 
     <!-- TELEGRAM -->
     <div id="s-telegram" class="sec">
+      <!-- Badge status Service Worker -->
+      <div id="sw-badge-wrap" style="margin-bottom:8px;"></div>
+
       <div class="tg-status-bar">
         <div class="tg-dot" id="tg-dot"></div>
         <span id="tg-status-txt">Bot desconectado — configure abaixo</span>
@@ -736,6 +893,13 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
         <div id="np-lista"><div class="empty-state"><div class="eicon">📦</div><p>Nenhum produto cadastrado.</p></div></div>
       </div>
       <div class="tg-panel" id="tg-panel-auto">
+        <!-- Aviso de persistência -->
+        <div style="background:#e8f0ff;border:1.5px solid #b5d4f4;border-radius:12px;padding:12px;margin-bottom:12px;font-size:12px;color:#1a3a8e;line-height:1.6;">
+          <strong>ℹ️ Como manter o bot ativo:</strong><br>
+          O bot continua enviando mesmo quando você minimiza o app.<br>
+          <strong>Para fechar o celular:</strong> mantenha a aba aberta em background (não feche o navegador).<br>
+          <span id="sw-info-auto" style="display:block;margin-top:4px;font-weight:800;"></span>
+        </div>
         <div class="interval-box">
           <div class="interval-box-hd">⏱️ Intervalo entre envios</div>
           <div class="interval-pills">
@@ -927,6 +1091,8 @@ function fazerLogin(){
 }
 
 function fazerLogout(){
+  // Para o bot antes de sair
+  tgPararAuto();
   localStorage.removeItem('svp_sessao');
   document.getElementById('tela-app').style.display='none';
   document.getElementById('tela-login').style.display='flex';
@@ -1078,8 +1244,6 @@ function renderClientes(filtro){
     html+='</div></div>';
   });
   el.innerHTML=html;
-
-  // Eventos delegados para evitar inline JS com aspas
   el.querySelectorAll('.reenviar-btn').forEach(function(btn){
     btn.addEventListener('click', function(){ reenviarSenha(this.dataset.k); });
   });
@@ -1167,7 +1331,7 @@ function ir(id){
   var map={home:0,kit:1,chat:2,busca:3,afiliado:4,achadinhos:5,'add-achado':5,copy:6,video:7,legenda:7,wpp:8,templates:9,calc:10,seo:11,tools:12,agenda:13,telegram:14};
   if(map[id]!==undefined){ var navs=document.querySelectorAll('.bnav'); if(navs[map[id]]) navs[map[id]].classList.add('on'); }
   if(id==='templates') renderTpls();
-  if(id==='telegram'){ autoRenderProds(); manualRenderProds(); }
+  if(id==='telegram'){ autoRenderProds(); manualRenderProds(); atualizarBadgeSW(); }
 }
 
 function selPill(el,campo,val){
@@ -1253,9 +1417,7 @@ function encurtarLink(){
 }
 
 function copiarLinkAfl(){ navigator.clipboard.writeText(aflLinkAtual).then(function(){ alert('Link copiado!'); }); }
-function copiarShort(){ navigator.clipboard.writeText(shortLinkAtual||aflLinkAtual).then(function(){ alert('Link copiado!'); }); }
 function usarAflNoWpp(){ document.getElementById('wpp-link').value=aflLinkAtual; prevWpp(); ir('wpp'); }
-function usarShortNoWpp(){ document.getElementById('wpp-link').value=shortLinkAtual||aflLinkAtual; prevWpp(); ir('wpp'); }
 
 function adicionarAoAchadinhos(){
   var nome=document.getElementById('afl-nome').value.trim()||'Produto via Afiliado';
@@ -1277,7 +1439,6 @@ function renderHistoricoAfl(){
     html+='</div>';
   });
   el.innerHTML=html;
-  // Bind eventos
   el.querySelectorAll('[data-link]').forEach(function(row){
     var lnk=decodeURIComponent(row.dataset.link);
     row.querySelector('.hist-copy-btn').onclick=function(){ navigator.clipboard.writeText(lnk).then(function(){ alert('Copiado!'); }); };
@@ -1341,13 +1502,10 @@ function copiarAchado(id){ var p=prods.find(function(x){ return x.id===id; }); i
 // ============================================================
 // CHAT IA
 // ============================================================
-// IA: usa openrouter/free (roteador automatico) + fallbacks confirmados Marco 2026
 async function chamarIA(prompt, max) {
   var chave = localStorage.getItem('openrouter_key') || '';
   if (!chave) throw new Error('Configure sua chave OpenRouter em Telegram > Config para usar a IA.');
 
-  // openrouter/free seleciona automaticamente qualquer modelo gratuito disponivel
-  // Fallbacks: modelos confirmados ativos em Marco 2026
   var MODELS = [
     'openrouter/auto',
     'meta-llama/llama-3.3-70b-instruct:free',
@@ -1383,7 +1541,6 @@ async function chamarIA(prompt, max) {
 
       if (!r.ok) {
         var eMsg = (data.error && data.error.message) ? data.error.message : ('Erro HTTP ' + r.status);
-        // Se modelo nao existe ou sem endpoints, tenta proximo
         if (r.status === 400 || r.status === 404 ||
             eMsg.indexOf('No endpoints') !== -1 ||
             eMsg.indexOf('not a valid model') !== -1 ||
@@ -1410,7 +1567,6 @@ async function chamarIA(prompt, max) {
   }
   throw lastError || new Error('Nenhum modelo disponivel. Verifique sua chave em openrouter.ai');
 }
-
 
 function animBar(id){
   var el=document.getElementById(id),p=0;
@@ -1580,7 +1736,6 @@ async function enviarChat(){
   var d2=document.createElement('div'); d2.className='chat-msg chat-ia'; d2.id='typing-msg'; d2.textContent='...'; wrap.appendChild(d2);
   wrap.scrollTop=wrap.scrollHeight;
   try{
-    // Reutiliza chamarIA com fallback automatico
     var sysMsg = 'Voce e especialista em vendas Shopee, afiliados e marketing digital no Brasil. Seja direta, pratica, use emojis. Responda em portugues.';
     var chave = localStorage.getItem('openrouter_key')||'';
     if(!chave){ throw new Error('Configure sua chave OpenRouter em Telegram > Config!'); }
@@ -1738,196 +1893,404 @@ function copiarTpl(){ var t=document.getElementById('tpl-edit').value; var l=doc
 function baixar(nome,c){ var b=new Blob([c],{type:'text/plain;charset=utf-8'}); var u=URL.createObjectURL(b); var a=document.createElement('a'); a.href=u; a.download=nome; a.click(); URL.revokeObjectURL(u); }
 
 // ============================================================
-// TELEGRAM BOT
 // ============================================================
-var tgAutoTimer=null, tgAutoAtivo=false, tgAutoIdx=0;
-var tgIntervalo=parseInt(localStorage.getItem('tg_intervalo')||'10');
-var tgAutoDest=localStorage.getItem('tg_auto_dest')||'ambos';
-var tgManDest='ambos', tgManCDt='ambos', tgManProdSel=null;
+// TELEGRAM BOT — SISTEMA PERSISTENTE (SW + Fallback)
+// ============================================================
+// ============================================================
 
-function tgSalvar(){
-  var t=document.getElementById('tg-inp-token').value.trim();
-  var c=document.getElementById('tg-inp-canal').value.trim();
-  var g=document.getElementById('tg-inp-grupo').value.trim();
-  var o=document.getElementById('tg-inp-or').value.trim();
-  if(t) localStorage.setItem('tg_token',t);
-  if(c) localStorage.setItem('tg_canal',c);
-  if(g) localStorage.setItem('tg_grupo',g);
-  if(o) localStorage.setItem('openrouter_key',o);
-  if(t) tgTestar(t);
+var tgAutoAtivo = false;
+var tgAutoIdx = 0;
+var tgFallbackTimer = null;       // fallback timer (quando SW não disponível)
+var tgIntervalo = parseInt(localStorage.getItem('tg_intervalo') || '10');
+var tgAutoDest = localStorage.getItem('tg_auto_dest') || 'ambos';
+var tgManDest = 'ambos';
+var tgManCDt = 'ambos';
+var tgManProdSel = null;
+
+// ── Badge UI do Service Worker ──────────────────────────────
+function atualizarBadgeSW() {
+  var wrap = document.getElementById('sw-badge-wrap');
+  var info = document.getElementById('sw-info-auto');
+  if (!wrap) return;
+  if (window._swOk) {
+    wrap.innerHTML = '<span class="sw-badge ok">✅ Service Worker ativo — envios continuam em background</span>';
+    if (info) info.textContent = '✅ Service Worker: o bot continua mesmo com a tela bloqueada!';
+  } else if ('serviceWorker' in navigator) {
+    wrap.innerHTML = '<span class="sw-badge warn">⚠️ Service Worker carregando... aguarde</span>';
+    if (info) info.textContent = '⏳ Aguardando Service Worker... mantenha a aba aberta.';
+  } else {
+    wrap.innerHTML = '<span class="sw-badge err">⚠️ Modo compatibilidade — mantenha a aba aberta no navegador</span>';
+    if (info) info.textContent = '⚠️ Seu navegador não suporta background total. Mantenha a aba aberta.';
+  }
 }
 
-async function tgTestar(token){
-  tgLog('Conectando...','warn');
-  try{
-    var r=await fetch('https://api.telegram.org/bot'+token+'/getMe');
-    var d=await r.json();
-    if(d.ok){ document.getElementById('tg-dot').classList.add('on'); document.getElementById('tg-status-txt').textContent='✅ Conectado: @'+d.result.username; tgLog('Bot @'+d.result.username+' online!','ok'); }
-    else tgLog('Token invalido!','err');
-  }catch(e){ tgLog('Erro: '+e.message,'err'); }
+// ── Salva estado no localStorage para reconexão ─────────────
+function tgSalvarEstadoAuto(ativo) {
+  var cfg = {
+    ativo: ativo,
+    token: localStorage.getItem('tg_token') || '',
+    canal: localStorage.getItem('tg_canal') || '',
+    grupo: localStorage.getItem('tg_grupo') || '',
+    dest: tgAutoDest,
+    intervaloMin: tgIntervalo,
+    produtos: npGetLista(),
+    ts: Date.now()
+  };
+  localStorage.setItem('tg_auto_state', JSON.stringify(cfg));
 }
 
-async function tgSend(chatId,texto){
-  var token=localStorage.getItem('tg_token')||'';
-  if(!token){ tgLog('Configure o token!','err'); return false; }
-  try{
-    var r=await fetch('https://api.telegram.org/bot'+token+'/sendMessage',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({chat_id:chatId,text:texto,parse_mode:'Markdown'})});
-    var d=await r.json();
-    if(d.ok){ tgLog('Enviado para '+chatId,'ok'); return true; }
-    else{ tgLog('Erro '+chatId+': '+d.description,'err'); return false; }
-  }catch(e){ tgLog('Erro: '+e.message,'err'); return false; }
+function tgCarregarEstadoAuto() {
+  try {
+    var s = JSON.parse(localStorage.getItem('tg_auto_state') || 'null');
+    return s;
+  } catch(e) { return null; }
 }
 
-function tgLog(msg,tipo){
-  ['tg-log','tg-log-auto','tg-log-manual'].forEach(function(id){
-    var el=document.getElementById(id); if(!el) return;
-    var p=document.createElement('p'); p.className=tipo||'';
-    p.textContent='['+new Date().toLocaleTimeString('pt-BR')+'] '+msg;
-    el.appendChild(p); el.scrollTop=el.scrollHeight;
+// ── Envia msg para SW ───────────────────────────────────────
+async function tgSwCmd(type, payload) {
+  if (!window._swOk) return false;
+  try {
+    var result = await swEnviarMensagem(type, payload);
+    return result && result.ok;
+  } catch(e) { return false; }
+}
+
+// ── Log helper (escreve nos 3 logs + salva no localStorage) ─
+function tgLogApp(msg, tipo) {
+  // Salva últimos 50 logs para reconexão
+  var logs = JSON.parse(localStorage.getItem('tg_logs') || '[]');
+  logs.unshift({ msg: msg, tipo: tipo, ts: Date.now() });
+  if (logs.length > 50) logs = logs.slice(0, 50);
+  localStorage.setItem('tg_logs', JSON.stringify(logs));
+
+  ['tg-log', 'tg-log-auto', 'tg-log-manual'].forEach(function(id) {
+    var el = document.getElementById(id); if (!el) return;
+    var p = document.createElement('p'); p.className = tipo || '';
+    p.textContent = '[' + new Date().toLocaleTimeString('pt-BR') + '] ' + msg;
+    el.appendChild(p); el.scrollTop = el.scrollHeight;
+    // Limita linhas no DOM
+    while (el.children.length > 30) el.removeChild(el.firstChild);
   });
 }
 
-async function tgEnviarParaDest(texto,dest){
-  var canal=localStorage.getItem('tg_canal')||'';
-  var grupo=localStorage.getItem('tg_grupo')||'';
-  if((dest==='canal'||dest==='ambos')&&canal) await tgSend(canal,texto);
-  if((dest==='grupo'||dest==='ambos')&&grupo) await tgSend(grupo,texto);
+// ── Iniciar automático ──────────────────────────────────────
+async function tgIniciarAuto() {
+  var prodsList = npGetLista().filter(function(p) { return p.ativo; });
+  if (!prodsList.length) { alert('Cadastre pelo menos 1 produto ativo!'); return; }
+  var token = localStorage.getItem('tg_token') || '';
+  if (!token) { alert('Configure o token do bot primeiro!'); return; }
+
+  tgAutoAtivo = true;
+  tgSalvarEstadoAuto(true);
+  tgAtualizarUI(true);
+  tgLogApp('▶️ Envio automático iniciado! ' + prodsList.length + ' produto(s) · ' + tgIntervalo + 'min', 'ok');
+
+  if (window._swOk) {
+    // ── MODO SERVICE WORKER (persiste em background) ──
+    var ok = await tgSwCmd('TG_START', {
+      token: token,
+      canal: localStorage.getItem('tg_canal') || '',
+      grupo: localStorage.getItem('tg_grupo') || '',
+      dest: tgAutoDest,
+      intervaloMin: tgIntervalo,
+      produtos: prodsList
+    });
+    if (ok) {
+      tgLogApp('🤖 [SW] Bot rodando via Service Worker — funciona em background!', 'ok');
+    } else {
+      tgLogApp('⚠️ SW não respondeu, usando fallback...', 'warn');
+      tgIniciarFallback(prodsList, token);
+    }
+  } else {
+    // ── MODO FALLBACK (aba precisa ficar aberta) ──
+    tgIniciarFallback(prodsList, token);
+  }
 }
 
-function tgMontarOferta(prod){
-  var e=prod.emoji||'🛍️';
-  var m=e+' *OFERTA SHOPEE — '+prod.nome.toUpperCase()+'*\n\n';
-  if(prod.precoD) m+='~~De: '+prod.precoD+'~~\n';
-  m+='💰 *Por apenas: '+prod.preco+'*';
-  if(prod.desconto) m+=' — *'+prod.desconto+'*';
-  m+='\n\n';
-  if(prod.extra) m+=prod.extra+'\n\n';
-  m+='🛒 *Compre agora:*\n'+prod.link+'\n\n✅ Frete grátis disponível!\n⏰ Estoque limitado!';
+function tgIniciarFallback(prodsList, token) {
+  tgLogApp('⚙️ Modo fallback ativo — mantenha a aba aberta', 'warn');
+  tgFallbackLoop();
+}
+
+async function tgFallbackLoop() {
+  if (!tgAutoAtivo) return;
+  var prodsList = npGetLista().filter(function(p) { return p.ativo; });
+  if (!prodsList.length) { tgPararAuto(); return; }
+  var prod = prodsList[tgAutoIdx % prodsList.length];
+  tgAutoIdx++;
+  tgLogApp('📤 Enviando: ' + prod.nome + '...', 'warn');
+  await tgEnviarParaDest(tgMontarOferta(prod), tgAutoDest);
+  if (!tgAutoAtivo) return;
+  // Usa setTimeout recursivo — mais robusto que setInterval
+  tgFallbackTimer = setTimeout(tgFallbackLoop, tgIntervalo * 60 * 1000);
+}
+
+// ── Parar automático ────────────────────────────────────────
+async function tgPararAuto() {
+  tgAutoAtivo = false;
+  tgSalvarEstadoAuto(false);
+  // Para SW
+  if (window._swOk) await tgSwCmd('TG_STOP', {});
+  // Para fallback
+  if (tgFallbackTimer) { clearTimeout(tgFallbackTimer); tgFallbackTimer = null; }
+  tgAtualizarUI(false);
+  tgLogApp('⏹ Envio automático parado.', 'warn');
+}
+
+function tgToggleAuto() {
+  if (tgAutoAtivo) tgPararAuto(); else tgIniciarAuto();
+}
+
+function tgAtualizarUI(ativo) {
+  var btn = document.getElementById('btn-auto-toggle');
+  if (btn) {
+    btn.textContent = ativo ? '⏹ Parar Envio Automatico' : '▶️ Iniciar Envio Automatico';
+    btn.style.background = ativo ? '#c00' : '#0088cc';
+  }
+  var st = document.getElementById('auto-status');
+  if (st) {
+    if (ativo) {
+      var n = npGetLista().filter(function(p) { return p.ativo; }).length;
+      st.style.display = 'block';
+      st.textContent = (window._swOk ? '🤖 [SW] ' : '⚙️ ') + 'Ativo! ' + n + ' produto(s) a cada ' + tgIntervalo + ' min';
+    } else {
+      st.style.display = 'none';
+    }
+  }
+}
+
+// ── Reconectar ao recarregar a página ──────────────────────
+async function tgRestaurarEstado() {
+  var s = tgCarregarEstadoAuto();
+  if (!s || !s.ativo) return;
+  // Só restaura se menos de 1h passou (token ainda válido)
+  if (Date.now() - s.ts > 60 * 60 * 1000) return;
+  tgLogApp('🔄 Restaurando estado do bot automático...', 'warn');
+  // Restaura destino e intervalo
+  tgAutoDest = s.dest || 'ambos';
+  tgIntervalo = s.intervaloMin || 10;
+  await tgIniciarAuto();
+}
+
+// ── Salvar config ──────────────────────────────────────────
+function tgSalvar() {
+  var t = document.getElementById('tg-inp-token').value.trim();
+  var c = document.getElementById('tg-inp-canal').value.trim();
+  var g = document.getElementById('tg-inp-grupo').value.trim();
+  var o = document.getElementById('tg-inp-or').value.trim();
+  if (t) localStorage.setItem('tg_token', t);
+  if (c) localStorage.setItem('tg_canal', c);
+  if (g) localStorage.setItem('tg_grupo', g);
+  if (o) localStorage.setItem('openrouter_key', o);
+  // Atualiza produtos no SW se estiver ativo
+  if (tgAutoAtivo && window._swOk) {
+    tgSwCmd('TG_UPDATE_PRODUTOS', { produtos: npGetLista() });
+  }
+  if (t) tgTestar(t);
+}
+
+async function tgTestar(token) {
+  tgLogApp('Conectando...', 'warn');
+  try {
+    var r = await fetch('https://api.telegram.org/bot' + token + '/getMe');
+    var d = await r.json();
+    if (d.ok) {
+      document.getElementById('tg-dot').classList.add('on');
+      document.getElementById('tg-status-txt').textContent = '✅ Conectado: @' + d.result.username;
+      tgLogApp('Bot @' + d.result.username + ' online!', 'ok');
+    } else {
+      tgLogApp('Token inválido!', 'err');
+    }
+  } catch(e) {
+    tgLogApp('Erro: ' + e.message, 'err');
+  }
+}
+
+async function tgSend(chatId, texto) {
+  var token = localStorage.getItem('tg_token') || '';
+  if (!token) { tgLogApp('Configure o token!', 'err'); return false; }
+  try {
+    var r = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ chat_id: chatId, text: texto, parse_mode: 'Markdown' }),
+      keepalive: true
+    });
+    var d = await r.json();
+    if (d.ok) { tgLogApp('Enviado para ' + chatId, 'ok'); return true; }
+    else { tgLogApp('Erro ' + chatId + ': ' + d.description, 'err'); return false; }
+  } catch(e) { tgLogApp('Erro: ' + e.message, 'err'); return false; }
+}
+
+async function tgEnviarParaDest(texto, dest) {
+  var canal = localStorage.getItem('tg_canal') || '';
+  var grupo = localStorage.getItem('tg_grupo') || '';
+  if ((dest === 'canal' || dest === 'ambos') && canal) await tgSend(canal, texto);
+  if ((dest === 'grupo' || dest === 'ambos') && grupo) await tgSend(grupo, texto);
+}
+
+function tgMontarOferta(prod) {
+  var e = prod.emoji || '🛍️';
+  var m = e + ' *OFERTA SHOPEE — ' + prod.nome.toUpperCase() + '*\n\n';
+  if (prod.precoD) m += '~~De: ' + prod.precoD + '~~\n';
+  m += '💰 *Por apenas: ' + prod.preco + '*';
+  if (prod.desconto) m += ' — *' + prod.desconto + '*';
+  m += '\n\n';
+  if (prod.extra) m += prod.extra + '\n\n';
+  m += '🛒 *Compre agora:*\n' + prod.link + '\n\n✅ Frete grátis disponível!\n⏰ Estoque limitado!';
   return m;
 }
 
-function npGetLista(){ return JSON.parse(localStorage.getItem('tg_produtos')||'[]'); }
-function npSalvarLista(lista){ localStorage.setItem('tg_produtos',JSON.stringify(lista)); npRender(); autoRenderProds(); manualRenderProds(); }
+function npGetLista() { return JSON.parse(localStorage.getItem('tg_produtos') || '[]'); }
+function npSalvarLista(lista) {
+  localStorage.setItem('tg_produtos', JSON.stringify(lista));
+  // Atualiza produtos no SW se ativo
+  if (tgAutoAtivo && window._swOk) {
+    tgSwCmd('TG_UPDATE_PRODUTOS', { produtos: lista });
+  }
+  npRender(); autoRenderProds(); manualRenderProds();
+}
 
-function npSalvar(){
-  var nome=document.getElementById('np-nome').value.trim();
-  var link=document.getElementById('np-link').value.trim();
-  if(!nome||!link){ alert('Preencha nome e link!'); return; }
-  var lista=npGetLista();
-  lista.push({id:Date.now(),nome:nome,preco:document.getElementById('np-preco').value.trim()||'Ver link',precoD:document.getElementById('np-preco-de').value.trim(),desconto:document.getElementById('np-desconto').value.trim(),link:link,emoji:document.getElementById('np-emoji').value.trim()||'🛍️',extra:document.getElementById('np-extra').value.trim(),ativo:true});
+function npSalvar() {
+  var nome = document.getElementById('np-nome').value.trim();
+  var link = document.getElementById('np-link').value.trim();
+  if (!nome || !link) { alert('Preencha nome e link!'); return; }
+  var lista = npGetLista();
+  lista.push({
+    id: Date.now(), nome: nome,
+    preco: document.getElementById('np-preco').value.trim() || 'Ver link',
+    precoD: document.getElementById('np-preco-de').value.trim(),
+    desconto: document.getElementById('np-desconto').value.trim(),
+    link: link,
+    emoji: document.getElementById('np-emoji').value.trim() || '🛍️',
+    extra: document.getElementById('np-extra').value.trim(),
+    ativo: true
+  });
   npSalvarLista(lista);
-  ['np-nome','np-preco','np-preco-de','np-desconto','np-link','np-emoji','np-extra'].forEach(function(id){ var el=document.getElementById(id); if(el) el.value=''; });
+  ['np-nome','np-preco','np-preco-de','np-desconto','np-link','np-emoji','np-extra'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.value = '';
+  });
   alert('Produto salvo!');
 }
 
-function npRender(){
-  var lista=npGetLista(); var c=document.getElementById('np-lista'); if(!c) return;
-  if(!lista.length){ c.innerHTML='<div class="empty-state"><div class="eicon">📦</div><p>Nenhum produto cadastrado.</p></div>'; return; }
-  var html='';
-  lista.forEach(function(p){
-    html+='<div class="prod-card"><div class="prod-card-top"><div><div class="prod-card-nome">'+p.emoji+' '+p.nome+'</div><div class="prod-card-preco">'+p.preco+(p.desconto?' · '+p.desconto:'')+'</div></div>';
-    html+='<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:'+(p.ativo?'#e8f5e1':'#f5f2ef')+';color:'+(p.ativo?'#1a6e35':'#888')+'">'+(p.ativo?'Ativo':'Pausado')+'</span></div>';
-    html+='<div style="font-size:11px;color:#888;margin-bottom:8px;">'+p.link.substring(0,50)+'...</div>';
-    html+='<div class="prod-card-btns"><button class="pcb pcb-tg np-tg-btn" data-id="'+p.id+'">✈️ TG</button><button class="pcb pcb-wpp np-wpp-btn" data-id="'+p.id+'">💬 WPP</button><button class="pcb pcb-edit np-toggle-btn" data-id="'+p.id+'">'+(p.ativo?'⏸ Pausar':'▶️ Ativar')+'</button><button class="pcb pcb-del np-del-btn" data-id="'+p.id+'">🗑️</button></div></div>';
+function npRender() {
+  var lista = npGetLista(); var c = document.getElementById('np-lista'); if (!c) return;
+  if (!lista.length) { c.innerHTML = '<div class="empty-state"><div class="eicon">📦</div><p>Nenhum produto cadastrado.</p></div>'; return; }
+  var html = '';
+  lista.forEach(function(p) {
+    html += '<div class="prod-card"><div class="prod-card-top"><div><div class="prod-card-nome">' + p.emoji + ' ' + p.nome + '</div><div class="prod-card-preco">' + p.preco + (p.desconto ? ' · ' + p.desconto : '') + '</div></div>';
+    html += '<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:' + (p.ativo ? '#e8f5e1' : '#f5f2ef') + ';color:' + (p.ativo ? '#1a6e35' : '#888') + '">' + (p.ativo ? 'Ativo' : 'Pausado') + '</span></div>';
+    html += '<div style="font-size:11px;color:#888;margin-bottom:8px;">' + p.link.substring(0, 50) + '...</div>';
+    html += '<div class="prod-card-btns"><button class="pcb pcb-tg np-tg-btn" data-id="' + p.id + '">✈️ TG</button><button class="pcb pcb-wpp np-wpp-btn" data-id="' + p.id + '">💬 WPP</button><button class="pcb pcb-edit np-toggle-btn" data-id="' + p.id + '">' + (p.ativo ? '⏸ Pausar' : '▶️ Ativar') + '</button><button class="pcb pcb-del np-del-btn" data-id="' + p.id + '">🗑️</button></div></div>';
   });
-  c.innerHTML=html;
-  c.querySelectorAll('.np-tg-btn').forEach(function(btn){ btn.addEventListener('click',function(){ tgEnviarProd(parseInt(this.dataset.id)); }); });
-  c.querySelectorAll('.np-wpp-btn').forEach(function(btn){ btn.addEventListener('click',function(){ wppEnviarProd(parseInt(this.dataset.id)); }); });
-  c.querySelectorAll('.np-toggle-btn').forEach(function(btn){ btn.addEventListener('click',function(){ npToggle(parseInt(this.dataset.id)); }); });
-  c.querySelectorAll('.np-del-btn').forEach(function(btn){ btn.addEventListener('click',function(){ npDel(parseInt(this.dataset.id)); }); });
+  c.innerHTML = html;
+  c.querySelectorAll('.np-tg-btn').forEach(function(btn) { btn.addEventListener('click', function() { tgEnviarProd(parseInt(this.dataset.id)); }); });
+  c.querySelectorAll('.np-wpp-btn').forEach(function(btn) { btn.addEventListener('click', function() { wppEnviarProd(parseInt(this.dataset.id)); }); });
+  c.querySelectorAll('.np-toggle-btn').forEach(function(btn) { btn.addEventListener('click', function() { npToggle(parseInt(this.dataset.id)); }); });
+  c.querySelectorAll('.np-del-btn').forEach(function(btn) { btn.addEventListener('click', function() { npDel(parseInt(this.dataset.id)); }); });
 }
 
-function npToggle(id){ npSalvarLista(npGetLista().map(function(p){ return p.id===id?Object.assign({},p,{ativo:!p.ativo}):p; })); }
-function npDel(id){ if(!confirm('Deletar produto?')) return; npSalvarLista(npGetLista().filter(function(p){ return p.id!==id; })); }
-async function tgEnviarProd(id){ var p=npGetLista().find(function(x){ return x.id===id; }); if(p) await tgEnviarParaDest(tgMontarOferta(p),tgManDest); }
-function wppEnviarProd(id){ var p=npGetLista().find(function(x){ return x.id===id; }); if(p) window.open('https://wa.me/?text='+encodeURIComponent(tgMontarOferta(p).replace(/\*/g,'').replace(/~~/g,'')),'_blank'); }
+function npToggle(id) { npSalvarLista(npGetLista().map(function(p) { return p.id === id ? Object.assign({}, p, { ativo: !p.ativo }) : p; })); }
+function npDel(id) { if (!confirm('Deletar produto?')) return; npSalvarLista(npGetLista().filter(function(p) { return p.id !== id; })); }
+async function tgEnviarProd(id) { var p = npGetLista().find(function(x) { return x.id === id; }); if (p) await tgEnviarParaDest(tgMontarOferta(p), tgManDest); }
+function wppEnviarProd(id) { var p = npGetLista().find(function(x) { return x.id === id; }); if (p) window.open('https://wa.me/?text=' + encodeURIComponent(tgMontarOferta(p).replace(/\*/g, '').replace(/~~/g, '')), '_blank'); }
 
-function tgSetIntervalo(min,el){
-  tgIntervalo=min; localStorage.setItem('tg_intervalo',min);
-  document.getElementById('intervalo-val').textContent=min;
-  document.querySelectorAll('.ipill').forEach(function(p){ p.classList.remove('on'); });
-  if(el) el.classList.add('on');
-  if(tgAutoAtivo){ tgPararAuto(); tgIniciarAuto(); }
+function tgSetIntervalo(min, el) {
+  tgIntervalo = min; localStorage.setItem('tg_intervalo', min);
+  document.getElementById('intervalo-val').textContent = min;
+  document.querySelectorAll('.ipill').forEach(function(p) { p.classList.remove('on'); });
+  if (el) el.classList.add('on');
+  // Reinicia com novo intervalo
+  if (tgAutoAtivo) {
+    tgLogApp('⏱️ Intervalo atualizado para ' + min + ' min. Reiniciando...', 'warn');
+    tgPararAuto().then(function() {
+      setTimeout(tgIniciarAuto, 500);
+    });
+  }
 }
 
-function tgAutoSetDest(d){ tgAutoDest=d; localStorage.setItem('tg_auto_dest',d); ['ambos','canal','grupo'].forEach(function(x){ var el=document.getElementById('auto-pill-'+x); if(el) el.classList.toggle('on',x===d); }); }
-function tgManSetDest(d){ tgManDest=d; ['ambos','canal','grupo'].forEach(function(x){ var el=document.getElementById('man-pill-'+x); if(el) el.classList.toggle('on',x===d); }); }
-function tgManCDest(d){ tgManCDt=d; ['ambos','canal','grupo'].forEach(function(x){ var el=document.getElementById('man-c-'+x); if(el) el.classList.toggle('on',x===d); }); }
-
-function tgIniciarAuto(){
-  var prods2=npGetLista().filter(function(p){ return p.ativo; });
-  if(!prods2.length){ alert('Cadastre pelo menos 1 produto ativo!'); return; }
-  tgAutoAtivo=true;
-  var btn=document.getElementById('btn-auto-toggle');
-  if(btn){ btn.textContent='⏹ Parar Envio Automatico'; btn.style.background='#c00'; }
-  var st=document.getElementById('auto-status');
-  if(st){ st.style.display='block'; st.textContent='🤖 Ativo! '+prods2.length+' produto(s) a cada '+tgIntervalo+' min'; }
-  tgLog('Automatico iniciado! '+prods2.length+' produto(s) · '+tgIntervalo+'min','ok');
-  tgAutoEnviarProximo();
-  tgAutoTimer=setInterval(tgAutoEnviarProximo,tgIntervalo*60*1000);
+function tgAutoSetDest(d) {
+  tgAutoDest = d; localStorage.setItem('tg_auto_dest', d);
+  ['ambos','canal','grupo'].forEach(function(x) { var el = document.getElementById('auto-pill-' + x); if (el) el.classList.toggle('on', x === d); });
+}
+function tgManSetDest(d) {
+  tgManDest = d;
+  ['ambos','canal','grupo'].forEach(function(x) { var el = document.getElementById('man-pill-' + x); if (el) el.classList.toggle('on', x === d); });
+}
+function tgManCDest(d) {
+  tgManCDt = d;
+  ['ambos','canal','grupo'].forEach(function(x) { var el = document.getElementById('man-c-' + x); if (el) el.classList.toggle('on', x === d); });
 }
 
-function tgPararAuto(){
-  clearInterval(tgAutoTimer); tgAutoAtivo=false;
-  var btn=document.getElementById('btn-auto-toggle');
-  if(btn){ btn.textContent='▶️ Iniciar Envio Automatico'; btn.style.background='#0088cc'; }
-  var st=document.getElementById('auto-status'); if(st) st.style.display='none';
-  tgLog('Automatico parado.','warn');
-}
-
-function tgToggleAuto(){ if(tgAutoAtivo) tgPararAuto(); else tgIniciarAuto(); }
-
-async function tgAutoEnviarProximo(){
-  var prods2=npGetLista().filter(function(p){ return p.ativo; });
-  if(!prods2.length){ tgPararAuto(); return; }
-  var prod=prods2[tgAutoIdx%prods2.length];
-  tgLog('Enviando: '+prod.nome,'warn');
-  await tgEnviarParaDest(tgMontarOferta(prod),tgAutoDest);
-  tgAutoIdx++;
-}
-
-function autoRenderProds(){
-  var c=document.getElementById('auto-prods-lista'); if(!c) return;
-  var lista=npGetLista();
-  if(!lista.length){ c.innerHTML='<p style="font-size:12px;color:#888;">Cadastre produtos na aba Produtos primeiro.</p>'; return; }
-  var html='';
-  lista.forEach(function(p){
-    html+='<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--borda);">';
-    html+='<span style="font-size:13px;font-weight:800;">'+p.emoji+' '+p.nome+'</span>';
-    html+='<span class="auto-toggle-badge" data-id="'+p.id+'" style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:'+(p.ativo?'#e8f5e1':'#f5f2ef')+';color:'+(p.ativo?'#1a6e35':'#888')+';cursor:pointer;">'+(p.ativo?'✅ Ativo':'⏸ Pausado')+'</span>';
-    html+='</div>';
+function autoRenderProds() {
+  var c = document.getElementById('auto-prods-lista'); if (!c) return;
+  var lista = npGetLista();
+  if (!lista.length) { c.innerHTML = '<p style="font-size:12px;color:#888;">Cadastre produtos na aba Produtos primeiro.</p>'; return; }
+  var html = '';
+  lista.forEach(function(p) {
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--borda);">';
+    html += '<span style="font-size:13px;font-weight:800;">' + p.emoji + ' ' + p.nome + '</span>';
+    html += '<span class="auto-toggle-badge" data-id="' + p.id + '" style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:' + (p.ativo ? '#e8f5e1' : '#f5f2ef') + ';color:' + (p.ativo ? '#1a6e35' : '#888') + ';cursor:pointer;">' + (p.ativo ? '✅ Ativo' : '⏸ Pausado') + '</span>';
+    html += '</div>';
   });
-  c.innerHTML=html;
-  c.querySelectorAll('.auto-toggle-badge').forEach(function(badge){ badge.addEventListener('click',function(){ npToggle(parseInt(this.dataset.id)); }); });
-}
-
-function manualRenderProds(){
-  var c=document.getElementById('manual-prods-lista'); if(!c) return;
-  var lista=npGetLista();
-  if(!lista.length){ c.innerHTML='<p style="font-size:12px;color:#888;">Cadastre produtos na aba Produtos primeiro.</p>'; return; }
-  var html='';
-  lista.forEach(function(p){
-    var sel=tgManProdSel===p.id;
-    html+='<div class="prod-card man-sel-card" data-id="'+p.id+'" style="cursor:pointer;'+(sel?'border-color:#0088cc;background:#f0f8ff':'')+'">';
-    html+='<div class="prod-card-top"><div><div class="prod-card-nome">'+p.emoji+' '+p.nome+'</div><div class="prod-card-preco">'+p.preco+'</div></div>'+(sel?'<span style="font-size:20px;">✅</span>':'')+'</div></div>';
+  c.innerHTML = html;
+  c.querySelectorAll('.auto-toggle-badge').forEach(function(badge) {
+    badge.addEventListener('click', function() {
+      npToggle(parseInt(this.dataset.id));
+      // Atualiza SW com nova lista
+      if (tgAutoAtivo && window._swOk) tgSwCmd('TG_UPDATE_PRODUTOS', { produtos: npGetLista() });
+    });
   });
-  c.innerHTML=html;
-  c.querySelectorAll('.man-sel-card').forEach(function(card){ card.addEventListener('click',function(){ tgSelProd(parseInt(this.dataset.id)); }); });
 }
 
-function tgSelProd(id){ tgManProdSel=id; manualRenderProds(); }
-async function tgEnviarManual(){ if(!tgManProdSel){ alert('Selecione um produto!'); return; } var p=npGetLista().find(function(x){ return x.id===tgManProdSel; }); if(p) await tgEnviarParaDest(tgMontarOferta(p),tgManDest); }
-async function tgEnviarCustom(){ var msg=document.getElementById('man-msg-custom').value.trim(); if(!msg){ alert('Digite a mensagem!'); return; } await tgEnviarParaDest(msg,tgManCDt); }
-
-function tgTab(id){
-  var tabs=['config','produtos','auto','manual'];
-  tabs.forEach(function(t,i){
-    var tab=document.querySelectorAll('.tg-tab')[i]; if(tab) tab.classList.toggle('on',t===id);
-    var panel=document.getElementById('tg-panel-'+t); if(panel) panel.classList.toggle('on',t===id);
+function manualRenderProds() {
+  var c = document.getElementById('manual-prods-lista'); if (!c) return;
+  var lista = npGetLista();
+  if (!lista.length) { c.innerHTML = '<p style="font-size:12px;color:#888;">Cadastre produtos na aba Produtos primeiro.</p>'; return; }
+  var html = '';
+  lista.forEach(function(p) {
+    var sel = tgManProdSel === p.id;
+    html += '<div class="prod-card man-sel-card" data-id="' + p.id + '" style="cursor:pointer;' + (sel ? 'border-color:#0088cc;background:#f0f8ff' : '') + '">';
+    html += '<div class="prod-card-top"><div><div class="prod-card-nome">' + p.emoji + ' ' + p.nome + '</div><div class="prod-card-preco">' + p.preco + '</div></div>' + (sel ? '<span style="font-size:20px;">✅</span>' : '') + '</div></div>';
   });
-  if(id==='auto') autoRenderProds();
-  if(id==='manual') manualRenderProds();
+  c.innerHTML = html;
+  c.querySelectorAll('.man-sel-card').forEach(function(card) {
+    card.addEventListener('click', function() { tgSelProd(parseInt(this.dataset.id)); });
+  });
 }
+
+function tgSelProd(id) { tgManProdSel = id; manualRenderProds(); }
+async function tgEnviarManual() { if (!tgManProdSel) { alert('Selecione um produto!'); return; } var p = npGetLista().find(function(x) { return x.id === tgManProdSel; }); if (p) await tgEnviarParaDest(tgMontarOferta(p), tgManDest); }
+async function tgEnviarCustom() { var msg = document.getElementById('man-msg-custom').value.trim(); if (!msg) { alert('Digite a mensagem!'); return; } await tgEnviarParaDest(msg, tgManCDt); }
+
+function tgTab(id) {
+  var tabs = ['config','produtos','auto','manual'];
+  tabs.forEach(function(t, i) {
+    var tab = document.querySelectorAll('.tg-tab')[i]; if (tab) tab.classList.toggle('on', t === id);
+    var panel = document.getElementById('tg-panel-' + t); if (panel) panel.classList.toggle('on', t === id);
+  });
+  if (id === 'auto') { autoRenderProds(); atualizarBadgeSW(); }
+  if (id === 'manual') manualRenderProds();
+}
+
+// ── Evento de visibilidade — detecta quando volta para o app ─
+document.addEventListener('visibilitychange', function() {
+  if (document.visibilityState === 'visible') {
+    // Checa se o SW ainda está rodando
+    if (tgAutoAtivo && window._swOk) {
+      swEnviarMensagem('TG_PING', {}).then(function(res) {
+        if (res && res.active) {
+          tgLogApp('📶 Voltou ao app — bot ainda ativo via SW ✅', 'ok');
+        } else if (tgAutoAtivo) {
+          tgLogApp('⚠️ SW parou. Reiniciando bot...', 'warn');
+          tgIniciarAuto();
+        }
+      }).catch(function() {
+        if (tgAutoAtivo) tgIniciarAuto();
+      });
+    }
+  }
+});
 
 // ============================================================
 // AGENDADOR
@@ -2010,15 +2373,12 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('inp-admin').onkeydown=function(e){ if(e.key==='Enter') loginAdmin(); };
   document.getElementById('btn-voltar-login').onclick=voltarLogin;
   document.getElementById('btn-sair-admin').onclick=sairAdmin;
-
-  // Admin painel botões
   document.getElementById('btn-adm-criar').onclick=function(){ adminTab('criar'); };
   document.getElementById('btn-adm-clientes').onclick=function(){ adminTab('clientes'); };
   document.getElementById('btn-criar-licenca').onclick=criarLicenca;
   document.getElementById('btn-enviar-senha-wpp').onclick=enviarSenhaWpp;
   document.getElementById('btn-copiar-senha').onclick=copiarSenhaCriada;
 
-  // Admin tabs
   document.querySelectorAll('.admin-tab').forEach(function(tab){
     tab.addEventListener('click',function(){ adminTab(this.dataset.tab); });
   });
@@ -2027,8 +2387,6 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('btn-logout').onclick=fazerLogout;
   document.getElementById('btn-chat-send').onclick=enviarChat;
   document.getElementById('chat-inp').onkeydown=function(e){ if(e.key==='Enter') enviarChat(); };
-
-  // Baixar kit / roteiro
   document.getElementById('btn-baixar-kit').onclick=function(){ baixar('kit_lancamento.txt',window._kitTexto||''); };
   document.getElementById('btn-baixar-roteiro').onclick=function(){ baixar('roteiro.txt',window._roteiro||''); };
 
@@ -2037,7 +2395,12 @@ document.addEventListener('DOMContentLoaded', function(){
   verificarSessao();
 
   // Telegram config
-  var tData={token:localStorage.getItem('tg_token'),canal:localStorage.getItem('tg_canal'),grupo:localStorage.getItem('tg_grupo'),or:localStorage.getItem('openrouter_key')};
+  var tData={
+    token:localStorage.getItem('tg_token'),
+    canal:localStorage.getItem('tg_canal'),
+    grupo:localStorage.getItem('tg_grupo'),
+    or:localStorage.getItem('openrouter_key')
+  };
   if(tData.token) document.getElementById('tg-inp-token').value=tData.token;
   if(tData.canal) document.getElementById('tg-inp-canal').value=tData.canal;
   if(tData.grupo) document.getElementById('tg-inp-grupo').value=tData.grupo;
@@ -2045,8 +2408,17 @@ document.addEventListener('DOMContentLoaded', function(){
   if(tData.token) tgTestar(tData.token);
   document.getElementById('intervalo-val').textContent=tgIntervalo;
 
+  // Restaura destino salvo
+  tgAutoSetDest(tgAutoDest);
+
+  // Restaura bot se estava ativo antes
+  setTimeout(tgRestaurarEstado, 1500);
+
   setInterval(agVerificar,30000);
   agVerificar();
+
+  // Badge SW atualiza após SW registrar
+  setTimeout(atualizarBadgeSW, 2000);
 });
 </script>
 </body>
