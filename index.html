@@ -1078,6 +1078,8 @@ function renderClientes(filtro){
     html+='</div></div>';
   });
   el.innerHTML=html;
+
+  // Eventos delegados para evitar inline JS com aspas
   el.querySelectorAll('.reenviar-btn').forEach(function(btn){
     btn.addEventListener('click', function(){ reenviarSenha(this.dataset.k); });
   });
@@ -1275,6 +1277,7 @@ function renderHistoricoAfl(){
     html+='</div>';
   });
   el.innerHTML=html;
+  // Bind eventos
   el.querySelectorAll('[data-link]').forEach(function(row){
     var lnk=decodeURIComponent(row.dataset.link);
     row.querySelector('.hist-copy-btn').onclick=function(){ navigator.clipboard.writeText(lnk).then(function(){ alert('Copiado!'); }); };
@@ -1336,73 +1339,47 @@ function enviarAchadoWpp(id){ var p=prods.find(function(x){ return x.id===id; })
 function copiarAchado(id){ var p=prods.find(function(x){ return x.id===id; }); if(!p) return; navigator.clipboard.writeText(montarMsgAchado(p)).then(function(){ alert('Copiado!'); }); }
 
 // ============================================================
-// CHAT IA — MODELOS ATUALIZADOS COM FALLBACK
+// CHAT IA
 // ============================================================
-
-// Lista de modelos gratuitos para tentar em ordem
+// Modelos gratuitos atualizados (Março 2026)
 var IA_MODELS = [
   'meta-llama/llama-3.1-8b-instruct:free',
   'mistralai/mistral-7b-instruct:free',
   'google/gemma-2-9b-it:free',
-  'microsoft/phi-3-mini-128k-instruct:free'
+  'deepseek/deepseek-r1-distill-qwen-7b:free',
+  'qwen/qwen2.5-7b-instruct:free'
 ];
 
 async function chamarIA(prompt, max) {
   var chave = localStorage.getItem('openrouter_key') || '';
-  if (!chave) {
-    throw new Error('Configure sua chave OpenRouter em Telegram > Config para usar a IA.');
-  }
-
+  if (!chave) throw new Error('Configure sua chave OpenRouter em Telegram > Config para usar a IA.');
   var lastError = null;
-
   for (var mi = 0; mi < IA_MODELS.length; mi++) {
     var model = IA_MODELS[mi];
     try {
       var r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
         method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + chave,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': window.location.href,
-          'X-Title': 'Shopee Viral Pro'
-        },
-        body: JSON.stringify({
-          model: model,
-          messages: [
-            { role: 'system', content: 'Especialista em vendas Shopee Brasil. Seja direto, pratico, use emojis. Portugues brasileiro.' },
-            { role: 'user', content: prompt }
-          ],
-          max_tokens: max || 1000
-        })
+        headers: {'Authorization': 'Bearer '+chave,'Content-Type': 'application/json','HTTP-Referer': window.location.href,'X-Title': 'Shopee Viral Pro'},
+        body: JSON.stringify({model: model, messages: [{role:'system',content:'Especialista em vendas Shopee Brasil. Seja direto, pratico, use emojis. Portugues brasileiro.'},{role:'user',content:prompt}], max_tokens: max||1000})
       });
-
       if (!r.ok) {
         var eData = await r.json();
-        var eMsg = (eData.error && eData.error.message) ? eData.error.message : 'Erro modelo ' + model;
-        // Se for erro de endpoint/modelo, tenta o proximo
-        if (eMsg.indexOf('No endpoints') !== -1 || eMsg.indexOf('model') !== -1 || r.status === 404 || r.status === 400) {
-          lastError = new Error(eMsg);
-          continue;
-        }
+        var eMsg = (eData.error && eData.error.message) ? eData.error.message : 'Erro modelo';
+        if (eMsg.indexOf('No endpoints') !== -1 || eMsg.indexOf('not found') !== -1 || r.status === 404 || r.status === 400) { lastError = new Error(eMsg); continue; }
         throw new Error(eMsg);
       }
-
       var data = await r.json();
-      var content = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
-      if (!content) { lastError = new Error('Resposta vazia do modelo ' + model); continue; }
-      return content;
-
-    } catch (e) {
-      if (e.message && (e.message.indexOf('No endpoints') !== -1 || e.message.indexOf('fetch') !== -1)) {
-        lastError = e;
-        continue;
-      }
+      var txt = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+      if (!txt) { lastError = new Error('Resposta vazia de '+model); continue; }
+      return txt;
+    } catch(e) {
+      if (e.message && (e.message.indexOf('No endpoints') !== -1 || e.message.indexOf('not found') !== -1)) { lastError = e; continue; }
       throw e;
     }
   }
-
-  throw lastError || new Error('Nenhum modelo disponivel. Verifique sua chave OpenRouter.');
+  throw lastError || new Error('Nenhum modelo disponivel. Verifique sua chave em openrouter.ai');
 }
+
 
 function animBar(id){
   var el=document.getElementById(id),p=0;
@@ -1575,25 +1552,13 @@ async function enviarChat(){
     var chave=localStorage.getItem('openrouter_key')||'';
     var resp='';
     if(chave){
-      var tried=false;
-      for(var mi=0;mi<IA_MODELS.length;mi++){
-        try{
-          var r=await fetch('https://openrouter.ai/api/v1/chat/completions',{
-            method:'POST',
-            headers:{'Authorization':'Bearer '+chave,'Content-Type':'application/json','HTTP-Referer':window.location.href,'X-Title':'Shopee Viral Pro'},
-            body:JSON.stringify({model:IA_MODELS[mi],messages:[{role:'system',content:'Voce e especialista em vendas Shopee, afiliados e marketing digital no Brasil. Seja direta, pratica, use emojis. Responda em portugues.'}].concat(chatHistorico.slice(-8)),max_tokens:500})
-          });
-          var dd=await r.json();
-          if(!r.ok){
-            var em=(dd.error&&dd.error.message)?dd.error.message:'';
-            if(em.indexOf('No endpoints')!==-1||r.status===404||r.status===400) continue;
-            throw new Error(em||'Erro IA');
-          }
-          resp=(dd.choices&&dd.choices[0]&&dd.choices[0].message&&dd.choices[0].message.content)||'';
-          if(resp){ tried=true; break; }
-        }catch(ex){ if(ex.message&&ex.message.indexOf('No endpoints')!==-1) continue; throw ex; }
-      }
-      if(!resp) resp='Nenhum modelo disponivel no momento. Tente novamente em instantes.';
+      var r=await fetch('https://openrouter.ai/api/v1/chat/completions',{
+        method:'POST',
+        headers:{'Authorization':'Bearer '+chave,'Content-Type':'application/json','HTTP-Referer':window.location.href,'X-Title':'Shopee Viral Pro'},
+        body:JSON.stringify({model:'mistralai/mistral-7b-instruct:free',messages:[{role:'system',content:'Voce e especialista em vendas Shopee, afiliados e marketing digital no Brasil. Seja direta, pratica, use emojis. Responda em portugues.'}].concat(chatHistorico.slice(-8)),max_tokens:500})
+      });
+      var dd=await r.json();
+      resp=(dd.choices&&dd.choices[0]&&dd.choices[0].message&&dd.choices[0].message.content)||'Sem resposta.';
     } else {
       resp='Configure sua chave OpenRouter em Telegram > Config para usar o Chat IA!';
     }
@@ -1603,7 +1568,7 @@ async function enviarChat(){
     wrap.scrollTop=wrap.scrollHeight;
   }catch(e){
     var typing2=document.getElementById('typing-msg'); if(typing2) typing2.remove();
-    var d4=document.createElement('div'); d4.className='chat-msg chat-ia'; d4.textContent='Erro: '+e.message+'. Configure sua chave OpenRouter em Telegram > Config.'; wrap.appendChild(d4);
+    var d4=document.createElement('div'); d4.className='chat-msg chat-ia'; d4.textContent='Erro. Configure sua chave OpenRouter em Telegram > Config.'; wrap.appendChild(d4);
   }
 }
 
@@ -1978,36 +1943,44 @@ function agVerificar(){
 carregarCfg();
 
 document.addEventListener('DOMContentLoaded', function(){
+  // Login
   document.getElementById('btn-entrar').onclick=fazerLogin;
   document.getElementById('inp-senha').onkeydown=function(e){ if(e.key==='Enter') fazerLogin(); };
   document.getElementById('btn-comprar').onclick=function(){ window.open('https://pay.kiwify.com.br/xQkKAm4','_blank'); };
   document.getElementById('btn-ir-admin').onclick=irParaAdmin;
 
+  // Admin login
   document.getElementById('btn-login-admin').onclick=loginAdmin;
   document.getElementById('inp-admin').onkeydown=function(e){ if(e.key==='Enter') loginAdmin(); };
   document.getElementById('btn-voltar-login').onclick=voltarLogin;
   document.getElementById('btn-sair-admin').onclick=sairAdmin;
 
+  // Admin painel botões
   document.getElementById('btn-adm-criar').onclick=function(){ adminTab('criar'); };
   document.getElementById('btn-adm-clientes').onclick=function(){ adminTab('clientes'); };
   document.getElementById('btn-criar-licenca').onclick=criarLicenca;
   document.getElementById('btn-enviar-senha-wpp').onclick=enviarSenhaWpp;
   document.getElementById('btn-copiar-senha').onclick=copiarSenhaCriada;
 
+  // Admin tabs
   document.querySelectorAll('.admin-tab').forEach(function(tab){
     tab.addEventListener('click',function(){ adminTab(this.dataset.tab); });
   });
 
+  // App
   document.getElementById('btn-logout').onclick=fazerLogout;
   document.getElementById('btn-chat-send').onclick=enviarChat;
   document.getElementById('chat-inp').onkeydown=function(e){ if(e.key==='Enter') enviarChat(); };
 
+  // Baixar kit / roteiro
   document.getElementById('btn-baixar-kit').onclick=function(){ baixar('kit_lancamento.txt',window._kitTexto||''); };
   document.getElementById('btn-baixar-roteiro').onclick=function(){ baixar('roteiro.txt',window._roteiro||''); };
 
+  // Init
   updStats(); renderVitrine(); renderAgenda(); renderHistoricoAfl(); npRender(); renderTpls();
   verificarSessao();
 
+  // Telegram config
   var tData={token:localStorage.getItem('tg_token'),canal:localStorage.getItem('tg_canal'),grupo:localStorage.getItem('tg_grupo'),or:localStorage.getItem('openrouter_key')};
   if(tData.token) document.getElementById('tg-inp-token').value=tData.token;
   if(tData.canal) document.getElementById('tg-inp-canal').value=tData.canal;
