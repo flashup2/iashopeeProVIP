@@ -19,7 +19,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--dk);}
 .login-btn{width:100%;background:var(--r);color:white;border:none;border-radius:12px;padding:14px;font-size:15px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;}
 .login-err{color:#c00;font-size:12px;margin-top:8px;display:none;font-weight:700;}
 .plano-box{margin-top:24px;border-top:1px solid var(--borda);padding-top:22px;}
-.plano-card{border:2px solid var(--r);border-radius:18px;padding:18px;background:#fff0eb;}
+.plano-card{border:2px solid var(--r);border-radius:18px;padding:18px;background:#fff0eb;margin-bottom:12px;}
 .plano-badge-top{display:inline-block;background:var(--r);color:white;font-size:11px;font-weight:900;padding:4px 14px;border-radius:20px;margin-bottom:8px;}
 .plano-nome{font-size:16px;font-weight:900;color:var(--dk);}
 .plano-preco{font-size:32px;font-weight:900;color:var(--r);margin:4px 0;}
@@ -27,7 +27,7 @@ body{font-family:'Nunito',sans-serif;background:var(--bg);color:var(--dk);}
 .plano-items{text-align:left;margin:12px 0;font-size:13px;color:#555;line-height:2;}
 .plano-items li{list-style:none;}
 .plano-items li::before{content:'✅ ';}
-.comprar-btn{display:block;width:100%;background:var(--g);color:white;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;margin-top:10px;}
+.comprar-btn{display:block;width:100%;background:var(--g);color:white;border:none;border-radius:12px;padding:13px;font-size:14px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;margin-top:10px;text-decoration:none;text-align:center;}
 #tela-admin{display:none;min-height:100vh;padding:20px;background:linear-gradient(135deg,#1a1a2e,#2d1a4e);}
 .admin-box{background:white;border-radius:24px;padding:32px 26px;max-width:400px;width:100%;text-align:center;margin:auto;}
 .admin-logo{font-size:44px;margin-bottom:10px;}
@@ -101,9 +101,6 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 .result-txt{font-size:13px;color:#333;line-height:1.7;white-space:pre-wrap;}
 .use-btn{background:var(--r);color:white;border:none;border-radius:8px;padding:4px 12px;font-size:11px;font-weight:700;cursor:pointer;}
 .copy-btn-sm{background:#f0f0f0;color:#555;border:none;border-radius:8px;padding:4px 10px;font-size:11px;cursor:pointer;}
-.bloco{border-left:3px solid var(--r);padding:6px 0 6px 12px;margin-bottom:10px;}
-.bloco-tag{font-size:10px;font-weight:900;color:var(--r);text-transform:uppercase;}
-.bloco-txt{font-size:13px;color:#333;line-height:1.6;margin-top:3px;}
 .wpp-bubble{background:#e8f5e1;border-radius:14px;padding:14px;margin-top:10px;}
 .wpp-msg{background:white;border-radius:12px 12px 2px 12px;padding:11px 13px;font-size:13px;color:#222;line-height:1.8;white-space:pre-wrap;word-break:break-word;}
 .achado-card{background:white;border:1.5px solid var(--borda);border-radius:16px;overflow:hidden;margin-bottom:12px;}
@@ -148,7 +145,6 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 .agenda-desc{font-size:12px;color:#666;margin-top:2px;}
 .ag-pendente{background:#fef8e1;color:#7a5800;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;}
 .ag-enviado{background:#e8f5e1;color:#1a6e35;font-size:10px;font-weight:800;padding:3px 9px;border-radius:20px;}
-.ag-del{background:none;border:none;color:var(--r);font-size:16px;cursor:pointer;}
 .chat-wrap{background:var(--bg);border-radius:14px;padding:12px;height:320px;overflow-y:auto;display:flex;flex-direction:column;gap:10px;border:1.5px solid var(--borda);margin-bottom:10px;}
 .chat-msg{max-width:85%;padding:10px 13px;border-radius:12px;font-size:13px;line-height:1.7;}
 .chat-user{background:var(--r);color:white;border-radius:12px 12px 2px 12px;align-self:flex-end;}
@@ -200,7 +196,6 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 .tg-tab.on{background:#0088cc;color:white;border-color:#0088cc;}
 .tg-panel{display:none;}
 .tg-panel.on{display:block;}
-/* Aviso SW */
 .sw-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:800;padding:4px 10px;border-radius:20px;margin-bottom:10px;}
 .sw-badge.ok{background:#e8f5e1;color:#1a6e35;}
 .sw-badge.warn{background:#fef8e1;color:#7a5800;}
@@ -209,190 +204,60 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 </head>
 <body>
 
-<!-- ============================================================ -->
-<!-- SERVICE WORKER INLINE (blob) — roda em background            -->
-<!-- ============================================================ -->
-<script>
-// =====================================================================
-// SERVICE WORKER EMBUTIDO — registrado como blob URL
-// Mantém o bot Telegram rodando mesmo com a aba em background/fechada
-// =====================================================================
-const SW_CODE = `
-const CHANNEL = new BroadcastChannel('tg_bot_sw');
-let autoTimer = null;
-let autoConfig = null;
-let autoIdx = 0;
-
-self.addEventListener('message', (event) => {
-  const { type, payload } = event.data || {};
-  if (type === 'TG_START') {
-    autoConfig = payload;
-    autoIdx = 0;
-    clearTimer();
-    runLoop();
-    replyOk(event);
-  }
-  if (type === 'TG_STOP') {
-    clearTimer();
-    autoConfig = null;
-    replyOk(event);
-  }
-  if (type === 'TG_PING') {
-    if (event.ports && event.ports[0])
-      event.ports[0].postMessage({ ok: true, active: autoConfig !== null });
-  }
-  if (type === 'TG_UPDATE_PRODUTOS') {
-    if (autoConfig) autoConfig.produtos = payload.produtos;
-    replyOk(event);
-  }
-});
-
-function replyOk(event) {
-  if (event.ports && event.ports[0]) event.ports[0].postMessage({ ok: true });
-}
-
-function clearTimer() {
-  if (autoTimer) { clearTimeout(autoTimer); autoTimer = null; }
-}
-
-async function runLoop() {
-  if (!autoConfig) return;
-  await enviarProximo();
-  clearTimer();
-  autoTimer = setTimeout(runLoop, autoConfig.intervaloMin * 60 * 1000);
-}
-
-async function enviarProximo() {
-  if (!autoConfig) return;
-  const { token, canal, grupo, dest, produtos } = autoConfig;
-  const ativos = (produtos || []).filter(p => p.ativo);
-  if (!ativos.length) return;
-  const prod = ativos[autoIdx % ativos.length];
-  autoIdx++;
-  const texto = montarOferta(prod);
-  const targets = [];
-  if ((dest === 'canal' || dest === 'ambos') && canal) targets.push(canal);
-  if ((dest === 'grupo' || dest === 'ambos') && grupo) targets.push(grupo);
-  for (const chatId of targets) {
-    try {
-      const r = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ chat_id: chatId, text: texto, parse_mode: 'Markdown' }),
-        keepalive: true
-      });
-      const d = await r.json();
-      const msg = d.ok
-        ? '[SW] ✅ Enviado para ' + chatId + ': ' + prod.nome
-        : '[SW] ❌ Erro ' + chatId + ': ' + (d.description || 'desconhecido');
-      CHANNEL.postMessage({ type: 'TG_LOG', msg, level: d.ok ? 'ok' : 'err', ts: Date.now() });
-    } catch(e) {
-      CHANNEL.postMessage({ type: 'TG_LOG', msg: '[SW] ❌ Erro: ' + e.message, level: 'err', ts: Date.now() });
-    }
-  }
-}
-
-function montarOferta(prod) {
-  const e = prod.emoji || '🛍️';
-  let m = e + ' *OFERTA SHOPEE — ' + prod.nome.toUpperCase() + '*\n\n';
-  if (prod.precoD) m += '~~De: ' + prod.precoD + '~~\n';
-  m += '💰 *Por apenas: ' + prod.preco + '*';
-  if (prod.desconto) m += ' — *' + prod.desconto + '*';
-  m += '\n\n';
-  if (prod.extra) m += prod.extra + '\n\n';
-  m += '🛒 *Compre agora:*\n' + prod.link + '\n\n✅ Frete grátis disponível!\n⏰ Estoque limitado!';
-  return m;
-}
-
-self.addEventListener('install', () => self.skipWaiting());
-self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
-`;
-
-// =====================================================================
-// Registra o SW via blob (funciona mesmo sem arquivo físico separado)
-// =====================================================================
-let swRegistration = null;
-let swSupported = false;
-let swChannel = null;
-
-async function registrarSW() {
-  if (!('serviceWorker' in navigator)) {
-    console.warn('[TG] Service Worker não suportado. Usando fallback.');
-    return false;
-  }
-  try {
-    const blob = new Blob([SW_CODE], { type: 'application/javascript' });
-    const swUrl = URL.createObjectURL(blob);
-    swRegistration = await navigator.serviceWorker.register(swUrl, { scope: '/' });
-    swSupported = true;
-    swChannel = new BroadcastChannel('tg_bot_sw');
-    swChannel.onmessage = (e) => {
-      if (e.data && e.data.type === 'TG_LOG') {
-        tgLogApp(e.data.msg, e.data.level);
-      }
-    };
-    console.log('[TG] Service Worker registrado com sucesso!');
-    return true;
-  } catch(err) {
-    // Blob SW pode ser bloqueado em alguns contextos (cross-origin, file://)
-    console.warn('[TG] Service Worker falhou:', err.message, '— usando fallback.');
-    return false;
-  }
-}
-
-async function swEnviarMensagem(type, payload) {
-  if (!swRegistration) return false;
-  const sw = swRegistration.active || swRegistration.waiting || swRegistration.installing;
-  if (!sw) return false;
-  return new Promise((resolve) => {
-    const ch = new MessageChannel();
-    ch.port1.onmessage = (e) => resolve(e.data);
-    sw.postMessage({ type, payload }, [ch.port2]);
-  });
-}
-
-// Inicia registro do SW assim que possível
-registrarSW().then(ok => {
-  window._swOk = ok;
-  setTimeout(atualizarBadgeSW, 500);
-});
-</script>
-
 <!-- TELA LOGIN -->
 <div id="tela-login">
   <div class="login-box">
     <div class="login-logo">🛍</div>
     <div class="login-titulo">Shopee Viral Pro</div>
     <div class="login-sub">Ferramenta de vendas com IA para a Shopee</div>
+    <div style="display:flex;gap:7px;margin-bottom:14px;flex-wrap:wrap;">
+      <button onclick="document.getElementById('secao-planos').scrollIntoView({behavior:'smooth'})" style="flex:1;min-width:70px;background:#fff0eb;color:#EE4D2D;border:1.5px solid #EE4D2D;border-radius:10px;padding:8px 6px;font-size:11px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;">📅 Ver Planos</button>
+      <button onclick="document.getElementById('secao-planos').scrollIntoView({behavior:'smooth'})" style="flex:1;min-width:70px;background:#fffbeb;color:#b45309;border:1.5px solid #f59e0b;border-radius:10px;padding:8px 6px;font-size:11px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;">💛 Trimestral</button>
+      <button onclick="document.getElementById('secao-planos').scrollIntoView({behavior:'smooth'})" style="flex:1;min-width:70px;background:#fff0eb;color:#b03000;border:1.5px solid #EE4D2D;border-radius:10px;padding:8px 6px;font-size:11px;font-weight:900;cursor:pointer;font-family:'Nunito',sans-serif;">⭐ Anual</button>
+    </div>
     <input class="login-inp" type="password" id="inp-senha" placeholder="Digite sua senha de acesso"/>
     <button class="login-btn" id="btn-entrar">Entrar no App</button>
     <div class="login-err" id="login-err">Senha incorreta ou expirada.</div>
+    <a href="https://chat.whatsapp.com/HM68M87zKbb4dJBpzTUSgt" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#25D366;color:white;border-radius:14px;padding:14px;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;text-decoration:none;margin:14px 0 6px;box-sizing:border-box;">
+      💬 Grupo de Afiliados da Shopee — Entrar Grátis
+    </a>
     <div style="margin-top:12px;">
       <button id="btn-ir-admin" style="background:none;border:none;color:#bbb;font-size:12px;cursor:pointer;font-family:Nunito,sans-serif;text-decoration:underline;">🔐 Sou o administrador</button>
     </div>
-    <div class="plano-box">
+    <div class="plano-box" id="secao-planos">
+      <div style="font-size:12px;font-weight:800;color:#888;text-align:center;margin-bottom:12px;letter-spacing:.5px;">ESCOLHA SEU PLANO</div>
       <div class="plano-card">
-        <div class="plano-badge-top">PLANO MENSAL</div>
+        <div class="plano-badge-top">MENSAL</div>
         <div class="plano-nome">Shopee Viral Pro</div>
         <div class="plano-preco">R$ 47,00<span>/mês</span></div>
         <ul class="plano-items">
-          <li>Gerador de copy com IA</li>
-          <li>Roteiros virais para video</li>
-          <li>Legendas com hashtags</li>
-          <li>Gerador de link de afiliado</li>
-          <li>Buscador de ofertas</li>
-          <li>Agendador de envios</li>
-          <li>Templates prontos</li>
-          <li>Envio direto WhatsApp</li>
+          <li>Gerador de copy com IA</li><li>Roteiros virais para video</li><li>Legendas com hashtags</li>
+          <li>Gerador de link de afiliado</li><li>Buscador de ofertas</li><li>Agendador de envios</li>
+          <li>Templates prontos</li><li>Envio direto WhatsApp</li><li>Download vídeo Shopee</li>
         </ul>
-        <button id="btn-comprar" class="comprar-btn">🛒 Comprar agora — R$47/mês</button>
+        <a href="https://pay.kiwify.com.br/xQkKAm4" target="_blank" class="comprar-btn">🛒 Assinar Mensal — R$47/mês</a>
+      </div>
+      <div class="plano-card" style="border-color:#f59e0b;background:#fffbeb;">
+        <div class="plano-badge-top" style="background:#f59e0b;">TRIMESTRAL — ECONOMIZE</div>
+        <div class="plano-nome">Shopee Viral Pro</div>
+        <div class="plano-preco" style="color:#b45309;">R$ 115,00<span> /3 meses</span></div>
+        <div style="font-size:11px;color:#92400e;margin-bottom:8px;font-weight:800;">≈ R$38,33/mês — Economize R$26!</div>
+        <a href="https://pay.kiwify.com.br/GnCmJkQ" target="_blank" class="comprar-btn" style="background:#f59e0b;">🛒 Assinar Trimestral — R$115</a>
+      </div>
+      <div class="plano-card" style="border-color:#EE4D2D;background:#fff0eb;position:relative;">
+        <div style="position:absolute;top:-10px;left:50%;transform:translateX(-50%);background:#EE4D2D;color:white;font-size:10px;font-weight:900;padding:3px 14px;border-radius:20px;white-space:nowrap;">⭐ MELHOR VALOR</div>
+        <div class="plano-badge-top" style="margin-top:6px;">ANUAL</div>
+        <div class="plano-nome">Shopee Viral Pro</div>
+        <div class="plano-preco">R$ 347,00<span> /ano</span></div>
+        <div style="font-size:11px;color:#b03000;margin-bottom:8px;font-weight:800;">≈ R$28,92/mês — Economize R$217!</div>
+        <a href="https://pay.kiwify.com.br/iBFHsaK" target="_blank" class="comprar-btn">🛒 Assinar Anual — R$347</a>
       </div>
     </div>
   </div>
 </div>
 
 <!-- TELA ADMIN LOGIN -->
-<div id="tela-admin">
+<div id="tela-admin" style="display:none;min-height:100vh;padding:20px;background:linear-gradient(135deg,#1a1a2e,#2d1a4e);">
   <div class="admin-box">
     <div class="admin-logo">🔐</div>
     <div class="admin-titulo">Painel Administrativo</div>
@@ -407,12 +272,12 @@ registrarSW().then(ok => {
 </div>
 
 <!-- PAINEL ADMIN -->
-<div id="tela-admin-painel">
+<div id="tela-admin-painel" style="display:none;min-height:100vh;background:#f5f0ff;">
   <div class="admin-header">
     <h1>🔐 Painel Admin — Shopee Viral Pro</h1>
     <button id="btn-sair-admin" style="background:rgba(255,255,255,0.15);color:white;border:none;border-radius:8px;padding:5px 12px;font-size:12px;cursor:pointer;font-family:'Nunito',sans-serif;">Sair</button>
   </div>
-  <div class="admin-nav">
+  <div class="admin-nav" id="admin-nav">
     <div class="admin-tab on" data-tab="dashboard">📊 Dashboard</div>
     <div class="admin-tab" data-tab="clientes">👥 Clientes</div>
     <div class="admin-tab" data-tab="criar">➕ Nova Senha</div>
@@ -423,7 +288,7 @@ registrarSW().then(ok => {
       <div class="a-grid">
         <div class="a-stat"><div class="a-stat-v" id="adm-total">0</div><div class="a-stat-l">Licencas ativas</div></div>
         <div class="a-stat"><div class="a-stat-v" id="adm-mes">R$0</div><div class="a-stat-l">Receita mensal</div></div>
-        <div class="a-stat"><div class="a-stat-v" id="adm-novos">0</div><div class="a-stat-l">Novos este mes</div></div>
+        <div class="a-stat"><div class="a-stat-v" id="adm-novos">0</div><div class="a-stat-l">Total clientes</div></div>
         <div class="a-stat"><div class="a-stat-v">R$47</div><div class="a-stat-l">Valor plano</div></div>
       </div>
       <div class="a-card">
@@ -434,7 +299,7 @@ registrarSW().then(ok => {
       <div class="a-card"><div class="a-card-hd">📋 Ultimas licencas</div><div id="adm-recentes"></div></div>
     </div>
     <div id="adm-clientes" class="admin-sec">
-      <div class="a-card"><div class="a-card-hd">🔍 Buscar</div><input type="text" id="adm-busca" placeholder="Nome ou senha..." oninput="filtrarClientes()" style="background:#f5f0ff;border-color:#d4b8ff;"/></div>
+      <div class="a-card"><div class="a-card-hd">🔍 Buscar</div><input type="text" id="adm-busca" placeholder="Nome ou senha..." style="background:#f5f0ff;border-color:#d4b8ff;"/></div>
       <div class="a-card"><div class="a-card-hd">👥 Clientes</div><div id="adm-lista-clientes"></div></div>
     </div>
     <div id="adm-criar" class="admin-sec">
@@ -443,11 +308,11 @@ registrarSW().then(ok => {
         <lbl>Nome do cliente</lbl><input type="text" id="adm-nome-cliente" placeholder="Ex: Maria Silva" style="background:#f5f0ff;border-color:#d4b8ff;"/>
         <lbl>Telefone WhatsApp</lbl><input type="text" id="adm-tel-cliente" placeholder="Ex: 11999998888" style="background:#f5f0ff;border-color:#d4b8ff;"/>
         <lbl>Validade</lbl>
-        <div class="pill-row">
-          <div class="pill on" onclick="selAPill(this,'adm-validade','30')">30 dias</div>
-          <div class="pill" onclick="selAPill(this,'adm-validade','60')">60 dias</div>
-          <div class="pill" onclick="selAPill(this,'adm-validade','90')">90 dias</div>
-          <div class="pill" onclick="selAPill(this,'adm-validade','365')">1 ano</div>
+        <div class="pill-row" id="val-pills">
+          <div class="pill on" data-val="30">30 dias</div>
+          <div class="pill" data-val="60">60 dias</div>
+          <div class="pill" data-val="90">90 dias</div>
+          <div class="pill" data-val="365">1 ano</div>
         </div>
         <input type="hidden" id="adm-validade" value="30"/>
         <button class="btn" style="background:#5a2d8a;color:white;" id="btn-criar-licenca">✅ Gerar licenca</button>
@@ -468,24 +333,24 @@ registrarSW().then(ok => {
     <div id="adm-config" class="admin-sec">
       <div class="a-card">
         <div class="a-card-hd">⚙️ Configuracoes</div>
-        <lbl>Seu numero WhatsApp (para vendas)</lbl><input type="text" id="adm-wpp-num" placeholder="5511999998888" oninput="salvarConfig()"/>
-        <lbl>Nome do app</lbl><input type="text" id="adm-app-nome" placeholder="Shopee Viral Pro" oninput="salvarConfig()"/>
-        <lbl>Nova senha admin (deixe em branco para manter)</lbl><input type="text" id="adm-senha-atual" placeholder="Nova senha admin" oninput="salvarConfig()"/>
-        <div class="tip" style="margin-top:10px;">Configuracoes salvas automaticamente.</div>
+        <lbl>Seu numero WhatsApp</lbl><input type="text" id="adm-wpp-num" placeholder="5511999998888"/>
+        <lbl>Nome do app</lbl><input type="text" id="adm-app-nome" placeholder="Shopee Viral Pro"/>
+        <lbl>Nova senha admin (deixe vazio para manter)</lbl><input type="text" id="adm-senha-nova" placeholder="Nova senha admin"/>
+        <button class="btn btn-dk" style="margin-top:12px;" id="btn-salvar-cfg">💾 Salvar configuracoes</button>
+        <div class="tip" style="margin-top:10px;">Senha padrao: ADMIN@2024</div>
       </div>
     </div>
   </div>
 </div>
 
 <!-- TELA APP -->
-<div id="tela-app">
+<div id="tela-app" style="display:none;">
   <div class="header">
     <div class="hlogo"><h1>🛍 Shopee Viral Pro</h1><p id="app-usuario">Plano Mensal</p></div>
     <div class="hright"><div class="hbadge">PRO</div><button class="logout-btn" id="btn-logout">Sair</button></div>
   </div>
   <div class="body">
 
-    <!-- HOME -->
     <div id="s-home" class="sec on">
       <div class="grid2">
         <div class="stat"><div class="stat-v" id="cnt-prod">0</div><div class="stat-l">Achadinhos</div></div>
@@ -493,9 +358,11 @@ registrarSW().then(ok => {
         <div class="stat"><div class="stat-v" id="cnt-copy">0</div><div class="stat-l">Copies geradas</div></div>
         <div class="stat"><div class="stat-v" id="cnt-wpp">0</div><div class="stat-l">Envios WPP</div></div>
       </div>
+      <a href="https://chat.whatsapp.com/HM68M87zKbb4dJBpzTUSgt" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#25D366;color:white;border-radius:12px;padding:13px 18px;font-size:13px;font-weight:900;font-family:'Nunito',sans-serif;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">💬 Grupo de Afiliados da Shopee — Entrar Grátis</a>
       <div class="card">
         <div class="card-hd">⚡ Acesso rapido</div>
         <button class="btn btn-r" onclick="ir('kit')">🚀 Kit lancamento completo</button>
+        <button class="btn" style="margin-top:8px;background:#1a1a2e;color:white;" onclick="ir('shopeedl')">📥 Download Vídeo Shopee</button>
         <button class="btn btn-r" style="margin-top:8px;background:#fff0eb;color:var(--r);border:none;" onclick="ir('busca')">🔍 Buscar ofertas virais</button>
         <button class="btn btn-orange" style="margin-top:8px;" onclick="ir('afiliado')">🔗 Gerar link de afiliado</button>
         <button class="btn btn-dk" onclick="ir('achadinhos')">🛍 Meus achadinhos</button>
@@ -506,27 +373,56 @@ registrarSW().then(ok => {
       </div>
     </div>
 
-    <!-- KIT -->
+    <div id="s-shopeedl" class="sec">
+      <div class="card">
+        <div class="card-hd">📥 Download Vídeo Shopee</div>
+        <div style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6;">Cole o link do produto ou vídeo da Shopee para baixar <strong>sem marca d'água</strong>.</div>
+        <lbl>Link do produto ou vídeo</lbl>
+        <input type="text" id="shopee-dl-url" placeholder="https://shopee.com.br/... ou https://s.shopee.com.br/..."/>
+        <div style="background:#fff0eb;border-radius:10px;padding:10px 12px;font-size:12px;color:#712B13;line-height:1.6;margin:10px 0;">
+          <strong>📋 Como usar:</strong><br>
+          1. Abra o produto na Shopee<br>
+          2. Toque em Compartilhar → Copiar link<br>
+          3. Cole aqui e clique em Baixar
+        </div>
+        <button class="btn btn-r" id="btn-shopee-dl">⬇️ Baixar Vídeo Sem Marca D'água</button>
+        <button class="btn btn-gray" style="margin-top:8px;" onclick="window.open('https://svxtract.com','_blank')">🌐 Abrir SVXtract diretamente</button>
+      </div>
+      <div class="card">
+        <div class="card-hd">⬇️ Outros downloaders</div>
+        <div style="display:flex;flex-direction:column;gap:8px;">
+          <a href="https://svxtract.com" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fff0eb;border:1.5px solid var(--borda);border-radius:12px;text-decoration:none;color:var(--dk);">
+            <div><div style="font-size:13px;font-weight:800;">SVXtract</div><div style="font-size:11px;color:#888;">Melhor — gratuito, sem login</div></div><span>→</span>
+          </a>
+          <a href="https://shopeenowatermark.com" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fff0eb;border:1.5px solid var(--borda);border-radius:12px;text-decoration:none;color:var(--dk);">
+            <div><div style="font-size:13px;font-weight:800;">ShopeeNoWatermark</div><div style="font-size:11px;color:#888;">HD, sem login</div></div><span>→</span>
+          </a>
+          <a href="https://www.downloadshopeevideo.com/en" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fff0eb;border:1.5px solid var(--borda);border-radius:12px;text-decoration:none;color:var(--dk);">
+            <div><div style="font-size:13px;font-weight:800;">DownloadShopeeVideo</div><div style="font-size:11px;color:#888;">Alternativa</div></div><span>→</span>
+          </a>
+        </div>
+      </div>
+    </div>
+
     <div id="s-kit" class="sec">
       <div class="card">
         <div class="card-hd">🚀 Kit lancamento completo</div>
-        <div style="font-size:12px;color:#888;margin-bottom:12px;">A IA gera TUDO de uma vez: copy + legenda + roteiro + mensagem WPP.</div>
+        <div style="font-size:12px;color:#888;margin-bottom:12px;">A IA gera TUDO: copy + legenda + roteiro + mensagem WPP.</div>
         <lbl>Produto</lbl><input type="text" id="kit-prod" placeholder="Ex: Vestido floral P/M/G"/>
         <lbl>Preco</lbl><input type="text" id="kit-preco" placeholder="Ex: R$49,90"/>
         <lbl>Diferencial</lbl><input type="text" id="kit-diff" placeholder="Ex: frete gratis, 4.9 estrelas..."/>
         <lbl>Link do produto</lbl><input type="text" id="kit-link" placeholder="https://shopee.com.br/..."/>
-        <button class="btn btn-r" id="btn-kit" onclick="gerarKitCompleto()">🚀 Gerar kit completo com IA</button>
+        <button class="btn btn-r" id="btn-kit">🚀 Gerar kit completo com IA</button>
       </div>
       <div id="load-kit" style="display:none;" class="card"><div class="loading-ia"><div class="dot"></div><div class="dot"></div><div class="dot"></div><span id="kit-status">Gerando kit...</span></div><div class="bar-wrap"><div class="bar-fill" id="bar-kit"></div></div></div>
       <div id="res-kit" style="display:none;"><div class="card"><div class="card-hd">🚀 Kit pronto!</div><div id="kit-content"></div><button class="btn btn-dk" id="btn-baixar-kit">⬇️ Baixar kit completo (.txt)</button></div></div>
     </div>
 
-    <!-- CHAT IA -->
     <div id="s-chat" class="sec">
       <div class="card">
         <div class="card-hd">🤖 Chat IA assistente de vendas</div>
         <div class="chat-wrap" id="chat-msgs">
-          <div class="chat-msg chat-ia">Oi! Sou sua assistente de vendas 🛍 Pergunte sobre estrategias, afiliados, conteudo ou qualquer duvida sobre a Shopee!</div>
+          <div class="chat-msg chat-ia">Oi! Sou sua assistente de vendas 🛍 Pergunte sobre estrategias, afiliados ou qualquer duvida sobre a Shopee!</div>
         </div>
         <div class="chat-input-row">
           <input type="text" id="chat-inp" placeholder="Escreva sua duvida..."/>
@@ -540,7 +436,6 @@ registrarSW().then(ok => {
       </div>
     </div>
 
-    <!-- BUSCA -->
     <div id="s-busca" class="sec">
       <div class="card">
         <div class="card-hd">🔍 Buscar ofertas virais</div>
@@ -567,7 +462,6 @@ registrarSW().then(ok => {
       </div>
     </div>
 
-    <!-- AFILIADO -->
     <div id="s-afiliado" class="sec">
       <div class="card">
         <div class="card-hd">⚙️ Seu ID de afiliado</div>
@@ -576,10 +470,8 @@ registrarSW().then(ok => {
       </div>
       <div class="card">
         <div class="card-hd">🔗 Gerar link com comissao</div>
-        <lbl>Link do produto</lbl>
-        <input type="text" id="afl-link-input" placeholder="https://shopee.com.br/..."/>
-        <lbl>Nome do produto</lbl>
-        <input type="text" id="afl-nome" placeholder="Ex: Carrinho bebe Portatil"/>
+        <lbl>Link do produto</lbl><input type="text" id="afl-link-input" placeholder="https://shopee.com.br/..."/>
+        <lbl>Nome do produto</lbl><input type="text" id="afl-nome" placeholder="Ex: Carrinho bebe Portatil"/>
         <button class="btn btn-orange" onclick="gerarLinkAfiliado()">🔗 Gerar link de afiliado</button>
         <div id="afl-result" style="display:none;">
           <div class="divider"></div>
@@ -589,17 +481,13 @@ registrarSW().then(ok => {
             <button class="link-btn lb-short" onclick="encurtarLink()">✂️ Encurtar</button>
             <button class="link-btn lb-wpp" onclick="usarAflNoWpp()">💬 WPP</button>
           </div>
-          <div class="short-box" id="short-result">
-            <div style="font-size:10px;font-weight:800;color:#085041;margin-bottom:4px;">LINK ENCURTADO:</div>
-            <div id="short-url"></div>
-          </div>
+          <div class="short-box" id="short-result"><div style="font-size:10px;font-weight:800;color:#085041;margin-bottom:4px;">LINK ENCURTADO:</div><div id="short-url"></div></div>
           <button class="btn btn-r" style="margin-top:10px;" onclick="adicionarAoAchadinhos()">➕ Adicionar aos achadinhos</button>
         </div>
       </div>
       <div class="card"><div class="card-hd">📊 Historico</div><div id="historico-afl"><div class="empty-state"><div class="eicon">🔗</div><p>Nenhum link gerado ainda.</p></div></div></div>
     </div>
 
-    <!-- ACHADINHOS -->
     <div id="s-achadinhos" class="sec">
       <div class="filter-row" id="filtros">
         <div class="filter-pill on" onclick="filtrar(this,'todos')">Todos</div>
@@ -613,7 +501,6 @@ registrarSW().then(ok => {
       <button class="btn btn-r" onclick="ir('add-achado')">➕ Adicionar manualmente</button>
     </div>
 
-    <!-- ADD ACHADO -->
     <div id="s-add-achado" class="sec">
       <div class="card">
         <div class="card-hd">➕ Novo achado</div>
@@ -621,10 +508,7 @@ registrarSW().then(ok => {
         <lbl>Preco atual (R$)</lbl><input type="text" id="a-preco" placeholder="Ex: 49,90"/>
         <lbl>Preco original (opcional)</lbl><input type="text" id="a-preco-de" placeholder="Ex: 89,90"/>
         <lbl>Categoria</lbl>
-        <select id="a-cat">
-          <option value="moda">👗 Moda</option><option value="beleza">💄 Beleza</option>
-          <option value="casa">🏠 Casa</option><option value="eletro">📱 Eletronicos</option><option value="outros">📦 Outros</option>
-        </select>
+        <select id="a-cat"><option value="moda">👗 Moda</option><option value="beleza">💄 Beleza</option><option value="casa">🏠 Casa</option><option value="eletro">📱 Eletronicos</option><option value="outros">📦 Outros</option></select>
         <lbl>Emoji</lbl>
         <div class="pill-row" id="emoji-row">
           <div class="pill on" onclick="selEmoji(this,'👗')">👗</div><div class="pill" onclick="selEmoji(this,'👟')">👟</div>
@@ -644,7 +528,6 @@ registrarSW().then(ok => {
       </div>
     </div>
 
-    <!-- COPY IA -->
     <div id="s-copy" class="sec">
       <div class="card">
         <div class="card-hd">✍️ Copy de vendas com IA</div>
@@ -671,7 +554,6 @@ registrarSW().then(ok => {
       <div id="res-cp" style="display:none;"><div class="card"><div class="card-hd">🔥 Copies prontas!</div><div id="cp-content"></div><button class="btn btn-g" onclick="irWppDado('cp')">💬 Usar no WhatsApp</button></div></div>
     </div>
 
-    <!-- VIDEO -->
     <div id="s-video" class="sec">
       <div class="card">
         <div class="card-hd">🎬 Roteiro viral</div>
@@ -699,7 +581,6 @@ registrarSW().then(ok => {
       <div id="res-vd" style="display:none;"><div class="card"><div class="card-hd">🎥 Roteiro pronto!</div><div id="vd-content"></div><button class="btn btn-dk" id="btn-baixar-roteiro">⬇️ Baixar (.txt)</button><button class="btn btn-out" onclick="ir('legenda')">🔥 Gerar legenda</button></div></div>
     </div>
 
-    <!-- LEGENDA -->
     <div id="s-legenda" class="sec">
       <div class="card">
         <div class="card-hd">🔥 Legendas virais</div>
@@ -725,7 +606,6 @@ registrarSW().then(ok => {
       <div id="res-lg" style="display:none;"><div class="card"><div class="card-hd">✨ Legendas prontas!</div><div id="lg-content"></div><button class="btn btn-g" onclick="irWppDado('lg')">💬 Usar no WhatsApp</button></div></div>
     </div>
 
-    <!-- WHATSAPP -->
     <div id="s-wpp" class="sec">
       <div class="card">
         <div class="card-hd">🔗 Link da Shopee / Afiliado</div>
@@ -746,7 +626,6 @@ registrarSW().then(ok => {
       </div>
     </div>
 
-    <!-- TEMPLATES -->
     <div id="s-templates" class="sec">
       <div class="card">
         <div class="card-hd">📋 Templates prontos</div>
@@ -771,7 +650,6 @@ registrarSW().then(ok => {
       </div>
     </div>
 
-    <!-- CALC -->
     <div id="s-calc" class="sec">
       <div class="card">
         <div class="card-hd">📊 Calculadora de comissao</div>
@@ -797,7 +675,6 @@ registrarSW().then(ok => {
       </div>
     </div>
 
-    <!-- SEO -->
     <div id="s-seo" class="sec">
       <div class="card">
         <div class="card-hd">📝 Descricao SEO para Shopee</div>
@@ -810,7 +687,6 @@ registrarSW().then(ok => {
       <div id="res-seo" style="display:none;"><div class="card"><div class="card-hd">🎯 SEO otimizado!</div><div id="seo-content"></div><button class="btn btn-out" onclick="copiarSEO()">📋 Copiar descricao</button></div></div>
     </div>
 
-    <!-- FERRAMENTAS -->
     <div id="s-tools" class="sec">
       <div class="card">
         <div class="card-hd">🔄 Reescritor de copy</div>
@@ -841,11 +717,8 @@ registrarSW().then(ok => {
       </div>
     </div>
 
-    <!-- TELEGRAM -->
     <div id="s-telegram" class="sec">
-      <!-- Badge status Service Worker -->
       <div id="sw-badge-wrap" style="margin-bottom:8px;"></div>
-
       <div class="tg-status-bar">
         <div class="tg-dot" id="tg-dot"></div>
         <span id="tg-status-txt">Bot desconectado — configure abaixo</span>
@@ -859,14 +732,10 @@ registrarSW().then(ok => {
       <div class="tg-panel on" id="tg-panel-config">
         <div class="tg-card">
           <div class="tg-card-hd">⚙️ Configurar Bot</div>
-          <lbl>Token do Bot (@BotFather)</lbl>
-          <input class="tg-inp" id="tg-inp-token" placeholder="1234567890:AAHxxx..."/>
-          <lbl>Canal (ex: @shopeeviralpro)</lbl>
-          <input class="tg-inp" id="tg-inp-canal" placeholder="@seu_canal"/>
-          <lbl>Grupo (ex: @gruposhopee)</lbl>
-          <input class="tg-inp" id="tg-inp-grupo" placeholder="@seu_grupo"/>
-          <lbl>Chave OpenRouter (Chat IA - openrouter.ai gratis)</lbl>
-          <input class="tg-inp" id="tg-inp-or" placeholder="sk-or-v1-..."/>
+          <lbl>Token do Bot (@BotFather)</lbl><input class="tg-inp" id="tg-inp-token" placeholder="1234567890:AAHxxx..."/>
+          <lbl>Canal (ex: @shopeeviralpro)</lbl><input class="tg-inp" id="tg-inp-canal" placeholder="@seu_canal"/>
+          <lbl>Grupo (ex: @gruposhopee)</lbl><input class="tg-inp" id="tg-inp-grupo" placeholder="@seu_grupo"/>
+          <lbl>Chave OpenRouter (openrouter.ai gratis)</lbl><input class="tg-inp" id="tg-inp-or" placeholder="sk-or-v1-..."/>
           <button class="btn btn-tg" onclick="tgSalvar()">💾 Salvar e Conectar</button>
         </div>
         <div class="tg-log" id="tg-log"><p>Log de envios aparece aqui...</p></div>
@@ -874,31 +743,21 @@ registrarSW().then(ok => {
       <div class="tg-panel" id="tg-panel-produtos">
         <div class="tg-card">
           <div class="tg-card-hd">➕ Cadastrar Produto</div>
-          <lbl>Nome do produto *</lbl>
-          <input class="tg-inp" id="np-nome" placeholder="Ex: Kit Skincare Coreano"/>
-          <lbl>Preco atual *</lbl>
-          <input class="tg-inp" id="np-preco" placeholder="Ex: R$ 29,90"/>
-          <lbl>Preco original (riscado)</lbl>
-          <input class="tg-inp" id="np-preco-de" placeholder="Ex: R$ 59,90"/>
-          <lbl>Desconto</lbl>
-          <input class="tg-inp" id="np-desconto" placeholder="Ex: 50% OFF"/>
-          <lbl>Link de afiliado *</lbl>
-          <input class="tg-inp" id="np-link" placeholder="https://s.shopee.com.br/..."/>
-          <lbl>Emoji</lbl>
-          <input class="tg-inp" id="np-emoji" placeholder="Ex: 🧴"/>
-          <lbl>Texto extra</lbl>
-          <textarea class="tg-inp" id="np-extra" rows="2" placeholder="Ex: Frete gratis! So hoje!"></textarea>
+          <lbl>Nome do produto *</lbl><input class="tg-inp" id="np-nome" placeholder="Ex: Kit Skincare Coreano"/>
+          <lbl>Preco atual *</lbl><input class="tg-inp" id="np-preco" placeholder="Ex: R$ 29,90"/>
+          <lbl>Preco original (riscado)</lbl><input class="tg-inp" id="np-preco-de" placeholder="Ex: R$ 59,90"/>
+          <lbl>Desconto</lbl><input class="tg-inp" id="np-desconto" placeholder="Ex: 50% OFF"/>
+          <lbl>Link de afiliado *</lbl><input class="tg-inp" id="np-link" placeholder="https://s.shopee.com.br/..."/>
+          <lbl>Emoji</lbl><input class="tg-inp" id="np-emoji" placeholder="Ex: 🧴"/>
+          <lbl>Texto extra</lbl><textarea class="tg-inp" id="np-extra" rows="2" placeholder="Ex: Frete gratis! So hoje!"></textarea>
           <button class="btn btn-tg" onclick="npSalvar()">✅ Salvar Produto</button>
         </div>
         <div id="np-lista"><div class="empty-state"><div class="eicon">📦</div><p>Nenhum produto cadastrado.</p></div></div>
       </div>
       <div class="tg-panel" id="tg-panel-auto">
-        <!-- Aviso de persistência -->
         <div style="background:#e8f0ff;border:1.5px solid #b5d4f4;border-radius:12px;padding:12px;margin-bottom:12px;font-size:12px;color:#1a3a8e;line-height:1.6;">
-          <strong>ℹ️ Como manter o bot ativo:</strong><br>
-          O bot continua enviando mesmo quando você minimiza o app.<br>
-          <strong>Para fechar o celular:</strong> mantenha a aba aberta em background (não feche o navegador).<br>
-          <span id="sw-info-auto" style="display:block;margin-top:4px;font-weight:800;"></span>
+          <strong>ℹ️ Mantenha a aba aberta para o bot continuar enviando.</strong><br>
+          <span id="sw-info-auto"></span>
         </div>
         <div class="interval-box">
           <div class="interval-box-hd">⏱️ Intervalo entre envios</div>
@@ -955,26 +814,22 @@ registrarSW().then(ok => {
       </div>
     </div>
 
-    <!-- AGENDA -->
     <div id="s-agenda" class="sec">
       <div class="card">
         <div class="card-hd">📅 Novo Agendamento</div>
-        <lbl>Nome / Descricao</lbl>
-        <input type="text" id="ag-nome" placeholder="Ex: Oferta skincare manha"/>
-        <lbl>Horario</lbl>
-        <input type="time" id="ag-hora" value="09:00"/>
+        <lbl>Nome / Descricao</lbl><input type="text" id="ag-nome" placeholder="Ex: Oferta skincare manha"/>
+        <lbl>Horario</lbl><input type="time" id="ag-hora" value="09:00"/>
         <lbl>Dias da semana</lbl>
         <div class="pill-row" id="ag-dias-row">
-          <div class="pill" onclick="this.classList.toggle('on')" data-dia="Dom">Dom</div>
-          <div class="pill on" onclick="this.classList.toggle('on')" data-dia="Seg">Seg</div>
-          <div class="pill on" onclick="this.classList.toggle('on')" data-dia="Ter">Ter</div>
-          <div class="pill on" onclick="this.classList.toggle('on')" data-dia="Qua">Qua</div>
-          <div class="pill on" onclick="this.classList.toggle('on')" data-dia="Qui">Qui</div>
-          <div class="pill on" onclick="this.classList.toggle('on')" data-dia="Sex">Sex</div>
-          <div class="pill" onclick="this.classList.toggle('on')" data-dia="Sab">Sab</div>
+          <div class="pill" data-dia="Dom">Dom</div>
+          <div class="pill on" data-dia="Seg">Seg</div>
+          <div class="pill on" data-dia="Ter">Ter</div>
+          <div class="pill on" data-dia="Qua">Qua</div>
+          <div class="pill on" data-dia="Qui">Qui</div>
+          <div class="pill on" data-dia="Sex">Sex</div>
+          <div class="pill" data-dia="Sab">Sab</div>
         </div>
-        <lbl>Mensagem</lbl>
-        <textarea id="ag-msg" rows="3" placeholder="Cole a mensagem pronta aqui..."></textarea>
+        <lbl>Mensagem</lbl><textarea id="ag-msg" rows="3" placeholder="Cole a mensagem pronta aqui..."></textarea>
         <button class="btn btn-r" onclick="adicionarAgenda()">📅 Agendar Envio</button>
       </div>
       <div class="card">
@@ -983,10 +838,11 @@ registrarSW().then(ok => {
       </div>
     </div>
 
-  </div><!-- /body -->
+  </div>
 
   <div class="bnav-bar">
     <button class="bnav on" onclick="ir('home')"><span>🏠</span><p>Inicio</p></button>
+    <button class="bnav" onclick="ir('shopeedl')"><span>📥</span><p>Download</p></button>
     <button class="bnav" onclick="ir('kit')"><span>🚀</span><p>Kit</p></button>
     <button class="bnav" onclick="ir('chat')"><span>🤖</span><p>Chat IA</p></button>
     <button class="bnav" onclick="ir('busca')"><span>🔍</span><p>Buscar</p></button>
@@ -1005,1010 +861,602 @@ registrarSW().then(ok => {
 </div>
 
 <script>
-// ============================================================
-// CONFIGURACOES
-// ============================================================
-var CFG = {
-  senhaAdmin: 'ADMIN@2024',
-  wppNumero:  '5511999998888',
-  appNome:    'Shopee Viral Pro'
-};
-
-var TGCFG = {
-  get token(){ return localStorage.getItem('tg_token')||''; },
-  get canal(){ return localStorage.getItem('tg_canal')||''; },
-  get grupo(){ return localStorage.getItem('tg_grupo')||''; },
-  LINK_MENSAL:     'https://pay.kiwify.com.br/xQkKAm4',
-  LINK_TRIMESTRAL: 'https://pay.kiwify.com.br/GnCmJkQ',
-  LINK_ANUAL:      'https://pay.kiwify.com.br/iBFHsaK'
-};
-
-// ============================================================
-// LICENCAS
-// ============================================================
-function carregarLics(){ try{ return JSON.parse(localStorage.getItem('svp_lic')||'{}'); }catch(e){ return {}; } }
-function salvarLics(o){ localStorage.setItem('svp_lic', JSON.stringify(o)); }
-function carregarCfg(){
-  try{
-    var c = JSON.parse(localStorage.getItem('svp_cfg')||'null');
-    if(c){ if(c.wpp) CFG.wppNumero=c.wpp; if(c.nome) CFG.appNome=c.nome; if(c.admin) CFG.senhaAdmin=c.admin; }
-  }catch(e){}
-}
-
+// ===== CONFIG =====
+var SENHA_ADMIN_PADRAO = 'ADMIN@2024';
+var CFG = { wpp: '5511999998888', nome: 'Shopee Viral Pro' };
 var LICENSE_SECRET = 'SVP2024SECRET';
-function gerarHashSimples(str){
-  var h=0;
-  for(var i=0;i<str.length;i++){ h=(Math.imul(31,h)+str.charCodeAt(i))|0; }
-  var v=Math.abs(h).toString(36).toUpperCase();
-  while(v.length<4) v='0'+v;
-  return v.slice(0,4);
-}
 
-function verificarSenha(s){
-  s=(s||'').toUpperCase().trim();
-  if(!s) return null;
+function getSenhaAdmin() {
+  try { var c = JSON.parse(localStorage.getItem('svp_cfg') || 'null'); if (c && c.admin && c.admin.length >= 4) return c.admin.toUpperCase(); } catch(e) {}
+  return SENHA_ADMIN_PADRAO;
+}
+function carregarCfg() {
+  try { var c = JSON.parse(localStorage.getItem('svp_cfg') || 'null'); if (c) { if (c.wpp) CFG.wpp = c.wpp; if (c.nome) CFG.nome = c.nome; } } catch(e) {}
+}
+function gerarHash(str) {
+  var h = 0;
+  for (var i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+  var v = Math.abs(h).toString(36).toUpperCase();
+  while (v.length < 4) v = '0' + v;
+  return v.slice(0, 4);
+}
+function carregarLics() { try { return JSON.parse(localStorage.getItem('svp_lic') || '{}'); } catch(e) { return {}; } }
+function salvarLics(o) { localStorage.setItem('svp_lic', JSON.stringify(o)); }
+
+function verificarSenha(s) {
+  s = (s || '').toUpperCase().trim();
+  if (!s) return null;
   carregarCfg();
-  if(s===CFG.senhaAdmin) return {cliente:'Admin',vencimento:'2099-12-31'};
-  var m=s.match(/^PRO-([0-9A-Z]{4})-([0-9A-Z]{4})-([0-9A-Z]{4})$/);
-  if(m){
-    var vencStr=m[1], rand=m[2], check=m[3];
-    var payload=vencStr+rand+LICENSE_SECRET;
-    var checkEsp=gerarHashSimples(payload);
-    if(check===checkEsp){
-      var base=new Date('2024-01-01');
-      var diffDias=parseInt(vencStr,36);
-      var vencDate=new Date(base.getTime()+diffDias*24*60*60*1000);
-      if(vencDate>=new Date()){
-        var lic2=carregarLics();
-        if(lic2[s]) return lic2[s];
-        return {cliente:'Cliente',vencimento:vencDate.toISOString()};
-      }
+  if (s === getSenhaAdmin()) return { cliente: 'Admin', vencimento: '2099-12-31' };
+  var m = s.match(/^PRO-([0-9A-Z]{4})-([0-9A-Z]{4})-([0-9A-Z]{4})$/);
+  if (m) {
+    var vencStr = m[1], rand = m[2], check = m[3];
+    if (check === gerarHash(vencStr + rand + LICENSE_SECRET)) {
+      var base = new Date('2024-01-01');
+      var vencDate = new Date(base.getTime() + parseInt(vencStr, 36) * 86400000);
+      if (vencDate >= new Date()) { var l2 = carregarLics(); return l2[s] || { cliente: 'Cliente', vencimento: vencDate.toISOString() }; }
       return null;
     }
   }
-  var lic=carregarLics();
-  if(!lic[s]) return null;
-  var l=lic[s];
-  if(l.expirado) return null;
-  if(new Date(l.vencimento)<new Date()){ lic[s].expirado=true; salvarLics(lic); return null; }
+  var lic = carregarLics();
+  if (!lic[s]) return null;
+  var l = lic[s];
+  if (l.expirado || new Date(l.vencimento) < new Date()) { lic[s].expirado = true; salvarLics(lic); return null; }
   return l;
 }
 
-// ============================================================
-// LOGIN / SESSAO
-// ============================================================
-function fazerLogin(){
-  var s=(document.getElementById('inp-senha').value||'').trim();
-  var err=document.getElementById('login-err');
-  if(!s){ err.textContent='Digite sua senha.'; err.style.display='block'; return; }
-  var dados=verificarSenha(s);
-  if(!dados){ err.textContent='Senha incorreta ou expirada.'; err.style.display='block'; return; }
-  err.style.display='none';
-  localStorage.setItem('svp_sessao', JSON.stringify({senha:s.toUpperCase(),cliente:dados.cliente,ts:Date.now()}));
-  document.getElementById('tela-login').style.display='none';
-  document.getElementById('tela-app').style.display='block';
-  document.getElementById('app-usuario').textContent=dados.cliente||'Plano Mensal';
+// ===== TELAS =====
+function mostrar(id) {
+  ['tela-login','tela-admin','tela-admin-painel','tela-app'].forEach(function(t) {
+    var el = document.getElementById(t);
+    if (el) el.style.display = 'none';
+  });
+  var el = document.getElementById(id);
+  if (el) {
+    el.style.display = (id === 'tela-admin') ? 'flex' : (id === 'tela-login' ? 'flex' : 'block');
+  }
 }
 
-function fazerLogout(){
-  // Para o bot antes de sair
-  tgPararAuto();
+function fazerLogin() {
+  var s = (document.getElementById('inp-senha').value || '').trim();
+  var err = document.getElementById('login-err');
+  if (!s) { err.textContent = 'Digite sua senha.'; err.style.display = 'block'; return; }
+  var dados = verificarSenha(s);
+  if (!dados) { err.textContent = 'Senha incorreta ou expirada.'; err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  localStorage.setItem('svp_sessao', JSON.stringify({ senha: s.toUpperCase(), cliente: dados.cliente, ts: Date.now() }));
+  mostrar('tela-app');
+  document.getElementById('app-usuario').textContent = dados.cliente || 'Plano Mensal';
+}
+
+function fazerLogout() {
+  try { tgPararAuto(); } catch(e) {}
   localStorage.removeItem('svp_sessao');
-  document.getElementById('tela-app').style.display='none';
-  document.getElementById('tela-login').style.display='flex';
-  document.getElementById('inp-senha').value='';
-  document.getElementById('login-err').style.display='none';
+  document.getElementById('inp-senha').value = '';
+  document.getElementById('login-err').style.display = 'none';
+  mostrar('tela-login');
 }
 
-function verificarSessao(){
-  try{
-    carregarCfg();
-    var s=JSON.parse(localStorage.getItem('svp_sessao')||'null');
-    if(!s) return;
-    if(Date.now()-s.ts>31*24*60*60*1000){ localStorage.removeItem('svp_sessao'); return; }
-    var dados=verificarSenha(s.senha);
-    if(!dados){ localStorage.removeItem('svp_sessao'); return; }
-    document.getElementById('tela-login').style.display='none';
-    document.getElementById('tela-app').style.display='block';
-    document.getElementById('app-usuario').textContent=dados.cliente||'Plano Mensal';
-  }catch(e){}
-}
+function irParaAdmin() { mostrar('tela-admin'); }
+function voltarLogin() { mostrar('tela-login'); }
 
-// ============================================================
-// ADMIN
-// ============================================================
-function irParaAdmin(){
-  document.getElementById('tela-login').style.display='none';
-  var ta=document.getElementById('tela-admin');
-  ta.style.display='flex';
-  ta.style.alignItems='center';
-  ta.style.justifyContent='center';
-}
-
-function voltarLogin(){
-  document.getElementById('tela-admin').style.display='none';
-  document.getElementById('tela-login').style.display='flex';
-}
-
-function loginAdmin(){
+function loginAdmin() {
+  var s = (document.getElementById('inp-admin').value || '').trim();
+  var err = document.getElementById('admin-err');
+  if (!s) { err.textContent = 'Digite a senha.'; err.style.display = 'block'; return; }
   carregarCfg();
-  var s=(document.getElementById('inp-admin').value||'').trim();
-  var err=document.getElementById('admin-err');
-  if(!s||s!==CFG.senhaAdmin){ err.textContent='Senha incorreta.'; err.style.display='block'; return; }
-  err.style.display='none';
-  document.getElementById('tela-admin').style.display='none';
-  document.getElementById('tela-admin-painel').style.display='block';
+  if (s.toUpperCase() !== getSenhaAdmin()) { err.textContent = 'Senha incorreta.'; err.style.display = 'block'; return; }
+  err.style.display = 'none';
+  mostrar('tela-admin-painel');
   carregarConfigAdmin();
   renderDashboard();
   renderClientes();
 }
 
-function sairAdmin(){ location.reload(); }
+function sairAdmin() { location.reload(); }
 
-function adminTab(id){
-  document.querySelectorAll('.admin-sec').forEach(function(s){ s.classList.remove('on'); });
-  document.querySelectorAll('.admin-tab').forEach(function(t){ t.classList.remove('on'); });
-  var el=document.getElementById('adm-'+id);
-  if(el) el.classList.add('on');
-  document.querySelectorAll('.admin-tab').forEach(function(t){
-    if(t.dataset.tab===id) t.classList.add('on');
-  });
+function verificarSessao() {
+  carregarCfg();
+  try {
+    var s = JSON.parse(localStorage.getItem('svp_sessao') || 'null');
+    if (!s || Date.now() - s.ts > 31 * 86400000) { localStorage.removeItem('svp_sessao'); return; }
+    var dados = verificarSenha(s.senha);
+    if (!dados) { localStorage.removeItem('svp_sessao'); return; }
+    mostrar('tela-app');
+    document.getElementById('app-usuario').textContent = dados.cliente || 'Plano Mensal';
+  } catch(e) {}
 }
 
-function gerarSenhaOffline(nome,dias){
-  var base=new Date('2024-01-01');
-  var venc=new Date();
-  venc.setDate(venc.getDate()+dias);
-  var diffDias=Math.round((venc-base)/(1000*60*60*24));
-  var vencStr=diffDias.toString(36).toUpperCase();
-  while(vencStr.length<4) vencStr='0'+vencStr;
-  var c='ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  var rand='';
-  for(var i=0;i<4;i++) rand+=c[Math.floor(Math.random()*c.length)];
-  var payload=vencStr+rand+LICENSE_SECRET;
-  var check=gerarHashSimples(payload);
-  return 'PRO-'+vencStr+'-'+rand+'-'+check;
+// ===== ADMIN =====
+function adminTab(id) {
+  document.querySelectorAll('.admin-sec').forEach(function(s) { s.classList.remove('on'); });
+  document.querySelectorAll('.admin-tab').forEach(function(t) { t.classList.remove('on'); });
+  var el = document.getElementById('adm-' + id);
+  if (el) el.classList.add('on');
+  document.querySelectorAll('.admin-tab').forEach(function(t) { if (t.dataset.tab === id) t.classList.add('on'); });
+}
+
+function gerarSenhaOffline(dias) {
+  var base = new Date('2024-01-01');
+  var venc = new Date(); venc.setDate(venc.getDate() + dias);
+  var diffDias = Math.round((venc - base) / 86400000);
+  var vencStr = diffDias.toString(36).toUpperCase();
+  while (vencStr.length < 4) vencStr = '0' + vencStr;
+  var c = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789', rand = '';
+  for (var i = 0; i < 4; i++) rand += c[Math.floor(Math.random() * c.length)];
+  var check = gerarHash(vencStr + rand + LICENSE_SECRET);
+  return 'PRO-' + vencStr + '-' + rand + '-' + check;
 }
 
 var _ultimaSenha = {};
-
-function criarLicenca(){
-  var nome=document.getElementById('adm-nome-cliente').value.trim();
-  var tel=document.getElementById('adm-tel-cliente').value.trim().replace(/\D/g,'');
-  var dias=parseInt(document.getElementById('adm-validade').value)||30;
-  if(!nome){ alert('Informe o nome do cliente!'); return; }
-  var senha=gerarSenhaOffline(nome,dias);
-  var venc=new Date();
-  venc.setDate(venc.getDate()+dias);
-  var lic=carregarLics();
-  lic[senha]={cliente:nome,tel:tel,criado:new Date().toLocaleDateString('pt-BR'),vencimento:venc.toISOString(),dias:dias,expirado:false};
+function criarLicenca() {
+  var nome = document.getElementById('adm-nome-cliente').value.trim();
+  var tel = document.getElementById('adm-tel-cliente').value.trim().replace(/\D/g, '');
+  var dias = parseInt(document.getElementById('adm-validade').value) || 30;
+  if (!nome) { alert('Informe o nome do cliente!'); return; }
+  var senha = gerarSenhaOffline(dias);
+  var venc = new Date(); venc.setDate(venc.getDate() + dias);
+  var lic = carregarLics();
+  lic[senha] = { cliente: nome, tel: tel, criado: new Date().toLocaleDateString('pt-BR'), vencimento: venc.toISOString(), dias: dias, expirado: false };
   salvarLics(lic);
-  _ultimaSenha={senha:senha,nome:nome,tel:tel,venc:venc.toLocaleDateString('pt-BR'),dias:dias};
-  document.getElementById('adm-nome-cliente').value='';
-  document.getElementById('adm-tel-cliente').value='';
-  document.getElementById('adm-senha-exibida').textContent=senha;
-  var link='[COLE O LINK DO SEU SITE AQUI]';
-  var msg='Ola, '+nome+'!\n\nSua licenca do *'+CFG.appNome+'* foi ativada!\n\nSua senha de acesso:\n*'+senha+'*\n\nValidade: '+dias+' dias (ate '+_ultimaSenha.venc+')\n\nAcesse em:\n'+link+'\n\nQualquer duvida e so chamar!';
-  document.getElementById('adm-msg-wpp').textContent=msg;
-  document.getElementById('adm-senha-criada').style.display='block';
-  renderDashboard();
-  renderClientes();
-}
-
-function enviarSenhaWpp(){
-  var tel=_ultimaSenha.tel ? '55'+_ultimaSenha.tel : CFG.wppNumero;
-  var msg=document.getElementById('adm-msg-wpp').textContent;
-  window.open('https://api.whatsapp.com/send?phone='+tel+'&text='+encodeURIComponent(msg),'_blank');
-}
-
-function copiarSenhaCriada(){
-  navigator.clipboard.writeText(document.getElementById('adm-msg-wpp').textContent).then(function(){ alert('Mensagem copiada!'); });
-}
-
-function renderDashboard(){
-  var lic=carregarLics();
-  var keys=Object.keys(lic);
-  var ativas=keys.filter(function(k){ return !lic[k].expirado && new Date(lic[k].vencimento)>=new Date(); });
-  document.getElementById('adm-total').textContent=ativas.length;
-  document.getElementById('adm-mes').textContent='R$'+(ativas.length*47).toLocaleString('pt-BR');
-  document.getElementById('adm-novos').textContent=keys.length;
-  var rec=document.getElementById('adm-recentes');
-  if(!keys.length){
-    rec.innerHTML='<div class="empty-state"><div class="eicon">🔑</div><p>Nenhuma licenca criada.</p></div>';
-    return;
-  }
-  var html='';
-  keys.slice(-5).reverse().forEach(function(k){
-    var l=lic[k];
-    var ok=new Date(l.vencimento)>=new Date()&&!l.expirado;
-    html+='<div class="senha-item"><div><div class="senha-code">'+k+'</div><div class="senha-info">'+l.cliente+' · '+l.criado+'</div></div><span class="'+(ok?'senha-status-ativa':'senha-status-inativa')+'">'+(ok?'Ativa':'Expirada')+'</span></div>';
-  });
-  rec.innerHTML=html;
-}
-
-function renderClientes(filtro){
-  var lic=carregarLics();
-  var keys=Object.keys(lic);
-  if(filtro) keys=keys.filter(function(k){ return k.indexOf((filtro||'').toUpperCase())>=0||lic[k].cliente.toLowerCase().indexOf((filtro||'').toLowerCase())>=0; });
-  var el=document.getElementById('adm-lista-clientes');
-  if(!keys.length){ el.innerHTML='<div class="empty-state"><div class="eicon">👥</div><p>Nenhum cliente.</p></div>'; return; }
-  var html='';
-  keys.reverse().forEach(function(k){
-    var l=lic[k];
-    var ok=new Date(l.vencimento)>=new Date()&&!l.expirado;
-    html+='<div class="senha-item"><div style="flex:1;min-width:0;"><div class="senha-code">'+k+'</div><div class="senha-info">'+l.cliente+' · '+l.criado+' · Vence: '+new Date(l.vencimento).toLocaleDateString('pt-BR')+'</div></div>';
-    html+='<span class="'+(ok?'senha-status-ativa':'senha-status-inativa')+'">'+(ok?'Ativa':'Expirada')+'</span>';
-    html+='<div style="display:flex;gap:4px;">';
-    if(l.tel) html+='<button data-k="'+k+'" class="copy-btn-sm reenviar-btn" style="background:#e8f5e1;color:#1a6e35;">💬</button>';
-    html+='<button data-k="'+k+'" style="background:none;border:none;color:var(--r);font-size:15px;cursor:pointer;" class="deletar-btn">🗑</button>';
-    html+='</div></div>';
-  });
-  el.innerHTML=html;
-  el.querySelectorAll('.reenviar-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){ reenviarSenha(this.dataset.k); });
-  });
-  el.querySelectorAll('.deletar-btn').forEach(function(btn){
-    btn.addEventListener('click', function(){ deletarLic(this.dataset.k); });
-  });
-}
-
-function filtrarClientes(){ renderClientes(document.getElementById('adm-busca').value); }
-
-function reenviarSenha(k){
-  var lic=carregarLics(); var l=lic[k];
-  var msg='Ola, '+l.cliente+'! Sua senha do *'+CFG.appNome+'*:\n\n*'+k+'*\n\nValidade ate: '+new Date(l.vencimento).toLocaleDateString('pt-BR');
-  window.open('https://api.whatsapp.com/send?phone=55'+l.tel+'&text='+encodeURIComponent(msg),'_blank');
-}
-
-function deletarLic(k){
-  if(!confirm('Remover licenca '+k+'?')) return;
-  var lic=carregarLics(); delete lic[k]; salvarLics(lic);
+  _ultimaSenha = { senha: senha, nome: nome, tel: tel, venc: venc.toLocaleDateString('pt-BR'), dias: dias };
+  document.getElementById('adm-nome-cliente').value = '';
+  document.getElementById('adm-tel-cliente').value = '';
+  document.getElementById('adm-senha-exibida').textContent = senha;
+  var msg = 'Ola, ' + nome + '!\n\nSua licenca do *' + CFG.nome + '* foi ativada!\n\nSua senha:\n*' + senha + '*\n\nValidade: ' + dias + ' dias (ate ' + _ultimaSenha.venc + ')\n\nQualquer duvida e so chamar!';
+  document.getElementById('adm-msg-wpp').textContent = msg;
+  document.getElementById('adm-senha-criada').style.display = 'block';
   renderDashboard(); renderClientes();
 }
 
-function carregarConfigAdmin(){
-  var c=JSON.parse(localStorage.getItem('svp_cfg')||'null');
-  if(c){
-    document.getElementById('adm-wpp-num').value=c.wpp||'';
-    document.getElementById('adm-app-nome').value=c.nome||'';
-    document.getElementById('adm-senha-atual').value=c.admin||'';
-  }
+function enviarSenhaWpp() {
+  var tel = _ultimaSenha.tel ? '55' + _ultimaSenha.tel : CFG.wpp;
+  var msg = document.getElementById('adm-msg-wpp').textContent;
+  window.open('https://api.whatsapp.com/send?phone=' + tel + '&text=' + encodeURIComponent(msg), '_blank');
+}
+function copiarSenhaCriada() { navigator.clipboard.writeText(document.getElementById('adm-msg-wpp').textContent).then(function() { alert('Mensagem copiada!'); }); }
+
+function renderDashboard() {
+  var lic = carregarLics(), keys = Object.keys(lic);
+  var ativas = keys.filter(function(k) { return !lic[k].expirado && new Date(lic[k].vencimento) >= new Date(); });
+  document.getElementById('adm-total').textContent = ativas.length;
+  document.getElementById('adm-mes').textContent = 'R$' + (ativas.length * 47).toLocaleString('pt-BR');
+  document.getElementById('adm-novos').textContent = keys.length;
+  var rec = document.getElementById('adm-recentes');
+  if (!keys.length) { rec.innerHTML = '<div class="empty-state"><div class="eicon">🔑</div><p>Nenhuma licenca criada.</p></div>'; return; }
+  var html = '';
+  keys.slice(-5).reverse().forEach(function(k) {
+    var l = lic[k], ok = new Date(l.vencimento) >= new Date() && !l.expirado;
+    html += '<div class="senha-item"><div><div class="senha-code">' + k + '</div><div class="senha-info">' + l.cliente + ' · ' + l.criado + '</div></div><span class="' + (ok ? 'senha-status-ativa' : 'senha-status-inativa') + '">' + (ok ? 'Ativa' : 'Expirada') + '</span></div>';
+  });
+  rec.innerHTML = html;
 }
 
-function salvarConfig(){
-  var obj={wpp:document.getElementById('adm-wpp-num').value,nome:document.getElementById('adm-app-nome').value,admin:document.getElementById('adm-senha-atual').value};
-  localStorage.setItem('svp_cfg',JSON.stringify(obj));
-  if(obj.wpp) CFG.wppNumero=obj.wpp;
-  if(obj.nome) CFG.appNome=obj.nome;
-  if(obj.admin) CFG.senhaAdmin=obj.admin;
+function renderClientes(filtro) {
+  var lic = carregarLics(), keys = Object.keys(lic);
+  if (filtro) keys = keys.filter(function(k) { return k.indexOf((filtro || '').toUpperCase()) >= 0 || lic[k].cliente.toLowerCase().indexOf((filtro || '').toLowerCase()) >= 0; });
+  var el = document.getElementById('adm-lista-clientes');
+  if (!keys.length) { el.innerHTML = '<div class="empty-state"><div class="eicon">👥</div><p>Nenhum cliente.</p></div>'; return; }
+  var html = '';
+  keys.reverse().forEach(function(k) {
+    var l = lic[k], ok = new Date(l.vencimento) >= new Date() && !l.expirado;
+    html += '<div class="senha-item"><div style="flex:1;min-width:0;"><div class="senha-code">' + k + '</div><div class="senha-info">' + l.cliente + ' · ' + l.criado + ' · Vence: ' + new Date(l.vencimento).toLocaleDateString('pt-BR') + '</div></div>';
+    html += '<span class="' + (ok ? 'senha-status-ativa' : 'senha-status-inativa') + '">' + (ok ? 'Ativa' : 'Expirada') + '</span>';
+    html += '<div style="display:flex;gap:4px;">';
+    if (l.tel) html += '<button data-k="' + k + '" class="copy-btn-sm re-btn" style="background:#e8f5e1;color:#1a6e35;">💬</button>';
+    html += '<button data-k="' + k + '" style="background:none;border:none;color:var(--r);font-size:15px;cursor:pointer;" class="del-btn">🗑</button>';
+    html += '</div></div>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.re-btn').forEach(function(b) { b.addEventListener('click', function() { reenviarSenha(this.dataset.k); }); });
+  el.querySelectorAll('.del-btn').forEach(function(b) { b.addEventListener('click', function() { deletarLic(this.dataset.k); }); });
 }
 
-function selAPill(el,campo,val){
-  el.parentElement.querySelectorAll('.pill').forEach(function(p){ p.classList.remove('on'); });
-  el.classList.add('on');
-  document.getElementById(campo).value=val;
+function filtrarClientes() { renderClientes(document.getElementById('adm-busca').value); }
+function reenviarSenha(k) {
+  var l = carregarLics()[k];
+  var msg = 'Ola, ' + l.cliente + '! Sua senha do *' + CFG.nome + '*:\n\n*' + k + '*\n\nValidade ate: ' + new Date(l.vencimento).toLocaleDateString('pt-BR');
+  window.open('https://api.whatsapp.com/send?phone=55' + l.tel + '&text=' + encodeURIComponent(msg), '_blank');
+}
+function deletarLic(k) {
+  if (!confirm('Remover licenca ' + k + '?')) return;
+  var lic = carregarLics(); delete lic[k]; salvarLics(lic); renderDashboard(); renderClientes();
+}
+function carregarConfigAdmin() {
+  var c = JSON.parse(localStorage.getItem('svp_cfg') || 'null');
+  if (c) { document.getElementById('adm-wpp-num').value = c.wpp || ''; document.getElementById('adm-app-nome').value = c.nome || ''; }
+}
+function salvarCfgAdmin() {
+  var novaSenha = document.getElementById('adm-senha-nova').value.trim();
+  var obj = { wpp: document.getElementById('adm-wpp-num').value.trim(), nome: document.getElementById('adm-app-nome').value.trim() };
+  if (novaSenha && novaSenha.length >= 4) obj.admin = novaSenha.toUpperCase();
+  else { try { var ex = JSON.parse(localStorage.getItem('svp_cfg') || 'null'); if (ex && ex.admin) obj.admin = ex.admin; } catch(e) {} }
+  localStorage.setItem('svp_cfg', JSON.stringify(obj));
+  if (obj.wpp) CFG.wpp = obj.wpp;
+  if (obj.nome) CFG.nome = obj.nome;
+  alert('✅ Configuracoes salvas!');
+  document.getElementById('adm-senha-nova').value = '';
 }
 
-// ============================================================
-// APP CORE
-// ============================================================
-function svpGet(k,def){ try{ var v=localStorage.getItem(k); return v?JSON.parse(v):def; }catch(e){ return def; } }
-function svpSet(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+// ===== APP =====
+function svpGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e) { return d; } }
+function svpSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
 
-var prods=svpGet('svp_prods',[]);
-var agenda=svpGet('svp_agenda',[]);
-var cnts=svpGet('svp_cnts',{prod:0,afl:0,copy:0,wpp:0});
-var filtroAtual='todos';
-window._roteiro=''; window._copies=[]; window._legendas=[]; window._ultimoAchado=null;
-var aflLinkAtual='', shortLinkAtual='', aflHistorico=svpGet('svp_aflhist',[]);
-var catEmoji={moda:'👗',beleza:'💄',casa:'🏠',eletro:'📱',outros:'📦'};
-
-var tpls={
-  promo:[
-    {title:'Flash Sale 🔴',badge:'badge-r',txt:'🔴 FLASH SALE SHOPEE 🔴\n\n[PRODUTO] por apenas R$[PRECO]!\n\n🚚 Frete GRATIS\n⏰ So hoje!\n\n👇\n[LINK]'},
-    {title:'Desconto imperdivel 💛',badge:'badge-y',txt:'💛 NAO ACREDITO NESSE DESCONTO!\n\n[PRODUTO]\n\n❌ Era: R$[ORIGINAL]\n✅ Agora: R$[ATUAL]\n\n👇\n[LINK]'}
-  ],
-  lancamento:[
-    {title:'Chegou novidade 🆕',badge:'badge-b',txt:'🆕 ACABOU DE CHEGAR!\n\n[PRODUTO]\n\nPreco: R$[PRECO]\n\n[LINK]'},
-    {title:'Achado do dia 🛍',badge:'badge-r',txt:'🛍 ACHADO DO DIA!\n\n[PRODUTO] — R$[PRECO]\n\n[LINK]'}
-  ],
-  escassez:[
-    {title:'Ultimas unidades ⚠️',badge:'badge-r',txt:'⚠️ CORRE — ULTIMAS UNIDADES!\n\n[PRODUTO]\n\n💰 R$[PRECO]\n\n👇\n[LINK]'}
-  ],
-  fidelizacao:[
-    {title:'Exclusivo pra voce 💚',badge:'badge-g',txt:'💚 SO COMPARTILHANDO COM VOCE!\n\n[PRODUTO] por R$[PRECO]\n\n[LINK]'}
-  ],
-  grupos:[
-    {title:'Bem vindo ao grupo 👋',badge:'badge-b',txt:'👋 BEM VINDA AO GRUPO DE ACHADINHOS!\n\nAqui compartilho:\n🛍 Achadinhos da Shopee\n💰 Maiores descontos\n\nAtiva as notificacoes!'}
-  ]
+var prods = svpGet('svp_prods', []);
+var agenda = svpGet('svp_agenda', []);
+var cnts = svpGet('svp_cnts', { prod: 0, afl: 0, copy: 0, wpp: 0 });
+var filtroAtual = 'todos';
+window._roteiro = ''; window._copies = []; window._legendas = [];
+var aflLinkAtual = '', shortLinkAtual = '', aflHistorico = svpGet('svp_aflhist', []);
+var catEmoji = { moda: '👗', beleza: '💄', casa: '🏠', eletro: '📱', outros: '📦' };
+var tpls = {
+  promo: [{ title: 'Flash Sale 🔴', badge: 'badge-r', txt: '🔴 FLASH SALE SHOPEE 🔴\n\n[PRODUTO] por apenas R$[PRECO]!\n\n🚚 Frete GRATIS\n⏰ So hoje!\n\n👇\n[LINK]' }, { title: 'Desconto imperdivel 💛', badge: 'badge-y', txt: '💛 NAO ACREDITO NESSE DESCONTO!\n\n[PRODUTO]\n\n❌ Era: R$[ORIGINAL]\n✅ Agora: R$[ATUAL]\n\n👇\n[LINK]' }],
+  lancamento: [{ title: 'Chegou novidade 🆕', badge: 'badge-b', txt: '🆕 ACABOU DE CHEGAR!\n\n[PRODUTO]\n\nPreco: R$[PRECO]\n\n[LINK]' }, { title: 'Achado do dia 🛍', badge: 'badge-r', txt: '🛍 ACHADO DO DIA!\n\n[PRODUTO] — R$[PRECO]\n\n[LINK]' }],
+  escassez: [{ title: 'Ultimas unidades ⚠️', badge: 'badge-r', txt: '⚠️ CORRE — ULTIMAS UNIDADES!\n\n[PRODUTO]\n\n💰 R$[PRECO]\n\n👇\n[LINK]' }],
+  fidelizacao: [{ title: 'Exclusivo pra voce 💚', badge: 'badge-g', txt: '💚 SO COMPARTILHANDO COM VOCE!\n\n[PRODUTO] por R$[PRECO]\n\n[LINK]' }],
+  grupos: [{ title: 'Bem vindo ao grupo 👋', badge: 'badge-b', txt: '👋 BEM VINDA AO GRUPO DE ACHADINHOS!\n\nAqui compartilho:\n🛍 Achadinhos da Shopee\n💰 Maiores descontos\n\nAtiva as notificacoes!' }]
 };
 
-function ir(id){
-  document.querySelectorAll('.sec').forEach(function(s){ s.classList.remove('on'); });
-  var el=document.getElementById('s-'+id);
-  if(el) el.classList.add('on');
-  document.querySelectorAll('.bnav').forEach(function(b){ b.classList.remove('on'); });
-  var map={home:0,kit:1,chat:2,busca:3,afiliado:4,achadinhos:5,'add-achado':5,copy:6,video:7,legenda:7,wpp:8,templates:9,calc:10,seo:11,tools:12,agenda:13,telegram:14};
-  if(map[id]!==undefined){ var navs=document.querySelectorAll('.bnav'); if(navs[map[id]]) navs[map[id]].classList.add('on'); }
-  if(id==='templates') renderTpls();
-  if(id==='telegram'){ autoRenderProds(); manualRenderProds(); atualizarBadgeSW(); }
+function ir(id) {
+  document.querySelectorAll('.sec').forEach(function(s) { s.classList.remove('on'); });
+  var el = document.getElementById('s-' + id);
+  if (el) el.classList.add('on');
+  document.querySelectorAll('.bnav').forEach(function(b) { b.classList.remove('on'); });
+  var map = { home: 0, shopeedl: 1, kit: 2, chat: 3, busca: 4, afiliado: 5, achadinhos: 6, 'add-achado': 6, copy: 7, video: 8, legenda: 8, wpp: 9, templates: 10, calc: 11, seo: 12, tools: 13, agenda: 14, telegram: 15 };
+  if (map[id] !== undefined) { var navs = document.querySelectorAll('.bnav'); if (navs[map[id]]) navs[map[id]].classList.add('on'); }
+  if (id === 'templates') renderTpls();
+  if (id === 'telegram') { autoRenderProds(); manualRenderProds(); atualizarBadgeSW(); }
+}
+function selPill(el, campo, val) { el.parentElement.querySelectorAll('.pill').forEach(function(p) { p.classList.remove('on'); }); el.classList.add('on'); document.getElementById(campo).value = val; }
+function selEmoji(el, val) { document.getElementById('emoji-row').querySelectorAll('.pill').forEach(function(p) { p.classList.remove('on'); }); el.classList.add('on'); document.getElementById('a-emoji').value = val; }
+function selTab(el, campo, val) { el.parentElement.querySelectorAll('.tab-i').forEach(function(t) { t.classList.remove('on'); }); el.classList.add('on'); document.getElementById(campo).value = val; }
+function selTplCat(el, cat) { document.getElementById('tpl-tabs').querySelectorAll('.tab-i').forEach(function(t) { t.classList.remove('on'); }); el.classList.add('on'); renderTpls(cat); }
+function filtrar(el, cat) { document.getElementById('filtros').querySelectorAll('.filter-pill').forEach(function(p) { p.classList.remove('on'); }); el.classList.add('on'); filtroAtual = cat; renderVitrine(); }
+function updStats() { cnts.prod = prods.length; ['prod', 'afl', 'copy', 'wpp'].forEach(function(k) { var e = document.getElementById('cnt-' + k); if (e) e.textContent = cnts[k]; }); svpSet('svp_cnts', cnts); svpSet('svp_prods', prods); }
+
+// Download Shopee
+function abrirShopeeDownloader() {
+  var url = (document.getElementById('shopee-dl-url').value || '').trim();
+  if (!url) { alert('Cole o link da Shopee primeiro!'); return; }
+  window.open('https://svxtract.com/?url=' + encodeURIComponent(url), '_blank');
 }
 
-function selPill(el,campo,val){
-  el.parentElement.querySelectorAll('.pill').forEach(function(p){ p.classList.remove('on'); });
-  el.classList.add('on');
-  document.getElementById(campo).value=val;
-}
-
-function selEmoji(el,val){
-  document.getElementById('emoji-row').querySelectorAll('.pill').forEach(function(p){ p.classList.remove('on'); });
-  el.classList.add('on');
-  document.getElementById('a-emoji').value=val;
-}
-
-function selTab(el,campo,val){
-  el.parentElement.querySelectorAll('.tab-i').forEach(function(t){ t.classList.remove('on'); });
-  el.classList.add('on');
-  document.getElementById(campo).value=val;
-}
-
-function selTplCat(el,cat){
-  document.getElementById('tpl-tabs').querySelectorAll('.tab-i').forEach(function(t){ t.classList.remove('on'); });
-  el.classList.add('on');
-  renderTpls(cat);
-}
-
-function filtrar(el,cat){
-  document.getElementById('filtros').querySelectorAll('.filter-pill').forEach(function(p){ p.classList.remove('on'); });
-  el.classList.add('on');
-  filtroAtual=cat;
-  renderVitrine();
-}
-
-function updStats(){
-  cnts.prod=prods.length;
-  ['prod','afl','copy','wpp'].forEach(function(k){ var e=document.getElementById('cnt-'+k); if(e) e.textContent=cnts[k]; });
-  svpSet('svp_cnts',cnts);
-  svpSet('svp_prods',prods);
-}
-
-function buscarOfertas(){
-  var t=document.getElementById('busca-termo').value.trim();
-  if(!t){ alert('Digite o que buscar!'); return; }
-  window.open('https://www.google.com/search?q='+encodeURIComponent(t+' '+document.getElementById('busca-filtro').value+' site:shopee.com.br'),'_blank');
-}
-
-function buscaRapida(q){ window.open('https://www.google.com/search?q='+encodeURIComponent(q+' site:shopee.com.br'),'_blank'); }
-
-function gerarLinkAfiliado(){
-  var link=document.getElementById('afl-link-input').value.trim();
-  var nome=document.getElementById('afl-nome').value.trim()||'Produto';
-  var aflId=document.getElementById('afl-id').value.trim();
-  if(!link){ alert('Cole o link do produto!'); return; }
-  if(!aflId){ alert('Configure seu ID de afiliado!'); return; }
-  var lg='';
-  try{
-    var u=new URL(link);
-    u.searchParams.set('af_id',aflId);
-    u.searchParams.set('channel','link_sharing');
-    lg=u.toString();
-  }catch(e){
-    lg=link+(link.indexOf('?')>=0?'&':'?')+'af_id='+aflId+'&channel=link_sharing';
-  }
-  aflLinkAtual=lg; shortLinkAtual='';
-  document.getElementById('afl-link-gerado').textContent=lg;
-  document.getElementById('short-result').style.display='none';
-  document.getElementById('afl-result').style.display='block';
+// Afiliado
+function buscarOfertas() { var t = document.getElementById('busca-termo').value.trim(); if (!t) { alert('Digite o que buscar!'); return; } window.open('https://www.google.com/search?q=' + encodeURIComponent(t + ' ' + document.getElementById('busca-filtro').value + ' site:shopee.com.br'), '_blank'); }
+function buscaRapida(q) { window.open('https://www.google.com/search?q=' + encodeURIComponent(q + ' site:shopee.com.br'), '_blank'); }
+function gerarLinkAfiliado() {
+  var link = document.getElementById('afl-link-input').value.trim();
+  var nome = document.getElementById('afl-nome').value.trim() || 'Produto';
+  var aflId = document.getElementById('afl-id').value.trim();
+  if (!link) { alert('Cole o link do produto!'); return; }
+  if (!aflId) { alert('Configure seu ID de afiliado!'); return; }
+  var lg = ''; try { var u = new URL(link); u.searchParams.set('af_id', aflId); u.searchParams.set('channel', 'link_sharing'); lg = u.toString(); } catch(e) { lg = link + (link.indexOf('?') >= 0 ? '&' : '?') + 'af_id=' + aflId + '&channel=link_sharing'; }
+  aflLinkAtual = lg; shortLinkAtual = '';
+  document.getElementById('afl-link-gerado').textContent = lg;
+  document.getElementById('short-result').style.display = 'none';
+  document.getElementById('afl-result').style.display = 'block';
   cnts.afl++; updStats();
-  aflHistorico.unshift({nome:nome,link:lg,short:'',data:new Date().toLocaleTimeString('pt-BR',{hour:'2-digit',minute:'2-digit'})});
+  aflHistorico.unshift({ nome: nome, link: lg, short: '', data: new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) });
   renderHistoricoAfl();
 }
-
-function encurtarLink(){
-  if(!aflLinkAtual) return;
-  document.getElementById('short-url').textContent='Encurtando...';
-  document.getElementById('short-result').style.display='block';
-  fetch('https://tinyurl.com/api-create.php?url='+encodeURIComponent(aflLinkAtual))
-    .then(function(r){ return r.text(); })
-    .then(function(s){
-      if(s&&s.startsWith('http')){ shortLinkAtual=s; document.getElementById('short-url').textContent=s; if(aflHistorico[0]) aflHistorico[0].short=s; renderHistoricoAfl(); }
-      else document.getElementById('short-url').textContent='Acesse tinyurl.com para encurtar';
-    }).catch(function(){ document.getElementById('short-url').textContent='Acesse tinyurl.com para encurtar'; });
+function encurtarLink() {
+  if (!aflLinkAtual) return;
+  document.getElementById('short-url').textContent = 'Encurtando...'; document.getElementById('short-result').style.display = 'block';
+  fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(aflLinkAtual)).then(function(r) { return r.text(); }).then(function(s) {
+    if (s && s.startsWith('http')) { shortLinkAtual = s; document.getElementById('short-url').textContent = s; if (aflHistorico[0]) aflHistorico[0].short = s; renderHistoricoAfl(); }
+    else document.getElementById('short-url').textContent = 'Acesse tinyurl.com para encurtar';
+  }).catch(function() { document.getElementById('short-url').textContent = 'Acesse tinyurl.com para encurtar'; });
 }
-
-function copiarLinkAfl(){ navigator.clipboard.writeText(aflLinkAtual).then(function(){ alert('Link copiado!'); }); }
-function usarAflNoWpp(){ document.getElementById('wpp-link').value=aflLinkAtual; prevWpp(); ir('wpp'); }
-
-function adicionarAoAchadinhos(){
-  var nome=document.getElementById('afl-nome').value.trim()||'Produto via Afiliado';
-  var p={id:Date.now(),nome:nome,preco:'',precoDe:'',cat:'outros',emoji:'🛍',frete:'sim',link:shortLinkAtual||aflLinkAtual,desc:'Link de afiliado'};
-  prods.push(p); window._ultimoAchado=p; updStats(); renderVitrine(); alert('Adicionado!');
-}
-
-function renderHistoricoAfl(){
-  svpSet('svp_aflhist',aflHistorico);
-  var el=document.getElementById('historico-afl');
-  if(!aflHistorico.length){ el.innerHTML='<div class="empty-state"><div class="eicon">🔗</div><p>Nenhum link ainda.</p></div>'; return; }
-  var html='';
-  aflHistorico.slice(0,5).forEach(function(h){
-    var l=h.short||h.link;
-    html+='<div style="border:1.5px solid var(--borda);border-radius:10px;padding:10px;margin-bottom:8px;">';
-    html+='<div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;font-weight:800;">'+h.nome+'</span><span style="font-size:10px;color:#aaa;">'+h.data+'</span></div>';
-    html+='<div style="font-size:11px;color:#888;word-break:break-all;margin-bottom:6px;">'+l.substring(0,50)+'...</div>';
-    html+='<div style="display:flex;gap:5px;" data-link="'+encodeURIComponent(l)+'"><button class="hist-copy-btn copy-btn-sm">Copiar</button><button class="hist-wpp-btn use-btn">WPP</button></div>';
-    html+='</div>';
+function copiarLinkAfl() { navigator.clipboard.writeText(aflLinkAtual).then(function() { alert('Link copiado!'); }); }
+function usarAflNoWpp() { document.getElementById('wpp-link').value = aflLinkAtual; prevWpp(); ir('wpp'); }
+function adicionarAoAchadinhos() { var nome = document.getElementById('afl-nome').value.trim() || 'Produto via Afiliado'; var p = { id: Date.now(), nome: nome, preco: '', precoDe: '', cat: 'outros', emoji: '🛍', frete: 'sim', link: shortLinkAtual || aflLinkAtual, desc: 'Link de afiliado' }; prods.push(p); updStats(); renderVitrine(); alert('Adicionado!'); }
+function renderHistoricoAfl() {
+  svpSet('svp_aflhist', aflHistorico); var el = document.getElementById('historico-afl');
+  if (!aflHistorico.length) { el.innerHTML = '<div class="empty-state"><div class="eicon">🔗</div><p>Nenhum link ainda.</p></div>'; return; }
+  var html = '';
+  aflHistorico.slice(0, 5).forEach(function(h) {
+    var l = h.short || h.link;
+    html += '<div style="border:1.5px solid var(--borda);border-radius:10px;padding:10px;margin-bottom:8px;"><div style="display:flex;justify-content:space-between;margin-bottom:4px;"><span style="font-size:12px;font-weight:800;">' + h.nome + '</span><span style="font-size:10px;color:#aaa;">' + h.data + '</span></div><div style="font-size:11px;color:#888;word-break:break-all;margin-bottom:6px;">' + l.substring(0, 50) + '...</div><div style="display:flex;gap:5px;" data-link="' + encodeURIComponent(l) + '"><button class="hist-copy-btn copy-btn-sm">Copiar</button><button class="hist-wpp-btn use-btn">WPP</button></div></div>';
   });
-  el.innerHTML=html;
-  el.querySelectorAll('[data-link]').forEach(function(row){
-    var lnk=decodeURIComponent(row.dataset.link);
-    row.querySelector('.hist-copy-btn').onclick=function(){ navigator.clipboard.writeText(lnk).then(function(){ alert('Copiado!'); }); };
-    row.querySelector('.hist-wpp-btn').onclick=function(){ document.getElementById('wpp-link').value=lnk; prevWpp(); ir('wpp'); };
+  el.innerHTML = html;
+  el.querySelectorAll('[data-link]').forEach(function(row) {
+    var lnk = decodeURIComponent(row.dataset.link);
+    row.querySelector('.hist-copy-btn').onclick = function() { navigator.clipboard.writeText(lnk).then(function() { alert('Copiado!'); }); };
+    row.querySelector('.hist-wpp-btn').onclick = function() { document.getElementById('wpp-link').value = lnk; prevWpp(); ir('wpp'); };
   });
 }
 
-function addAchado(){
-  var nome=document.getElementById('a-nome').value.trim();
-  var preco2=document.getElementById('a-preco').value.trim();
-  if(!nome||!preco2){ alert('Preencha nome e preco!'); return; }
-  var p={id:Date.now(),nome:nome,preco:preco2,precoDe:document.getElementById('a-preco-de').value.trim(),cat:document.getElementById('a-cat').value,emoji:document.getElementById('a-emoji').value,frete:document.getElementById('a-frete').value,link:document.getElementById('a-link').value.trim(),desc:document.getElementById('a-desc').value.trim()};
-  prods.push(p); window._ultimoAchado=p;
-  ['a-nome','a-preco','a-preco-de','a-link','a-desc'].forEach(function(id){ document.getElementById(id).value=''; });
+// Achadinhos
+function addAchado() {
+  var nome = document.getElementById('a-nome').value.trim(), preco2 = document.getElementById('a-preco').value.trim();
+  if (!nome || !preco2) { alert('Preencha nome e preco!'); return; }
+  var p = { id: Date.now(), nome: nome, preco: preco2, precoDe: document.getElementById('a-preco-de').value.trim(), cat: document.getElementById('a-cat').value, emoji: document.getElementById('a-emoji').value, frete: document.getElementById('a-frete').value, link: document.getElementById('a-link').value.trim(), desc: document.getElementById('a-desc').value.trim() };
+  prods.push(p);
+  ['a-nome', 'a-preco', 'a-preco-de', 'a-link', 'a-desc'].forEach(function(id) { document.getElementById(id).value = ''; });
   updStats(); renderVitrine(); ir('achadinhos');
 }
-
-function calcOff(p){ if(!p.precoDe) return 0; var d=parseFloat(p.precoDe.replace(',','.')); var r=parseFloat(p.preco.replace(',','.')); return d>r?Math.round(((d-r)/d)*100):0; }
-
-function montarMsgAchado(p){
-  var off=calcOff(p);
-  var m='🛍 *ACHADO SHOPEE* 🛍\n\n'+p.emoji+' *'+p.nome+'*\n\n';
-  if(p.precoDe) m+='~~R$ '+p.precoDe+'~~\n';
-  if(p.preco) m+='💰 *R$ '+p.preco+'*'+(off?' ('+off+'% OFF!)':'')+'\n';
-  if(p.frete==='sim') m+='\n✅ *Frete gratis!*';
-  if(p.desc) m+='\n\n'+p.desc;
-  m+='\n\n👇 *Pega o seu aqui:*\n'+(p.link||'[link]')+'\n\n⚡ Corre que pode acabar!';
+function calcOff(p) { if (!p.precoDe) return 0; var d = parseFloat(p.precoDe.replace(',', '.')), r = parseFloat(p.preco.replace(',', '.')); return d > r ? Math.round(((d - r) / d) * 100) : 0; }
+function montarMsgAchado(p) {
+  var off = calcOff(p), m = '🛍 *ACHADO SHOPEE* 🛍\n\n' + p.emoji + ' *' + p.nome + '*\n\n';
+  if (p.precoDe) m += '~~R$ ' + p.precoDe + '~~\n';
+  if (p.preco) m += '💰 *R$ ' + p.preco + '*' + (off ? ' (' + off + '% OFF!)' : '') + '\n';
+  if (p.frete === 'sim') m += '\n✅ *Frete gratis!*';
+  if (p.desc) m += '\n\n' + p.desc;
+  m += '\n\n👇 *Pega o seu aqui:*\n' + (p.link || '[link]') + '\n\n⚡ Corre que pode acabar!';
   return m;
 }
-
-function renderVitrine(){
-  svpSet('svp_prods',prods);
-  var lista=prods.filter(function(p){ return filtroAtual==='todos'||p.cat===filtroAtual; });
-  var el=document.getElementById('lista-achadinhos');
-  if(!lista.length){ el.innerHTML='<div class="empty-state"><div class="eicon">🛍</div><p>Nenhum achado ainda.</p></div>'; return; }
-  var html='';
-  lista.forEach(function(p){
-    var off=calcOff(p);
-    html+='<div class="achado-card"><div class="achado-img">'+p.emoji+(off?'<div class="abadge abadge-off">'+off+'% OFF</div>':'')+'<div class="abadge abadge-cat">'+catEmoji[p.cat]+'</div>'+(p.frete==='sim'?'<div class="abadge abadge-frete">Frete gratis</div>':'')+'</div>';
-    html+='<div class="achado-body"><div class="tag-hot">ACHADO SHOPEE</div><div class="achado-nome">'+p.nome+'</div>';
-    if(p.precoDe) html+='<div class="achado-de">R$ '+p.precoDe+'</div>';
-    if(p.preco) html+='<div class="achado-preco">R$ '+p.preco+'</div>';
-    if(p.desc) html+='<div style="font-size:11px;color:#666;margin-top:3px;">'+p.desc+'</div>';
-    html+='<div class="achado-btns"><button class="abt abt-wpp" data-id="'+p.id+'" data-action="wpp">💬 WPP</button><button class="abt abt-copy" data-id="'+p.id+'" data-action="copy">📋 Copiar</button><button class="abt abt-del" data-id="'+p.id+'" data-action="del">🗑</button></div></div></div>';
+function renderVitrine() {
+  svpSet('svp_prods', prods);
+  var lista = prods.filter(function(p) { return filtroAtual === 'todos' || p.cat === filtroAtual; });
+  var el = document.getElementById('lista-achadinhos');
+  if (!lista.length) { el.innerHTML = '<div class="empty-state"><div class="eicon">🛍</div><p>Nenhum achado ainda.</p></div>'; return; }
+  var html = '';
+  lista.forEach(function(p) {
+    var off = calcOff(p);
+    html += '<div class="achado-card"><div class="achado-img">' + p.emoji + (off ? '<div class="abadge abadge-off">' + off + '% OFF</div>' : '') + '<div class="abadge abadge-cat">' + catEmoji[p.cat] + '</div>' + (p.frete === 'sim' ? '<div class="abadge abadge-frete">Frete gratis</div>' : '') + '</div>';
+    html += '<div class="achado-body"><div class="tag-hot">ACHADO SHOPEE</div><div class="achado-nome">' + p.nome + '</div>';
+    if (p.precoDe) html += '<div class="achado-de">R$ ' + p.precoDe + '</div>';
+    if (p.preco) html += '<div class="achado-preco">R$ ' + p.preco + '</div>';
+    if (p.desc) html += '<div style="font-size:11px;color:#666;margin-top:3px;">' + p.desc + '</div>';
+    html += '<div class="achado-btns"><button class="abt abt-wpp" data-id="' + p.id + '" data-action="wpp">💬 WPP</button><button class="abt abt-copy" data-id="' + p.id + '" data-action="copy">📋 Copiar</button><button class="abt abt-del" data-id="' + p.id + '" data-action="del">🗑</button></div></div></div>';
   });
-  el.innerHTML=html;
-  el.querySelectorAll('[data-action]').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var id=parseInt(this.dataset.id);
-      var action=this.dataset.action;
-      if(action==='wpp') enviarAchadoWpp(id);
-      else if(action==='copy') copiarAchado(id);
-      else if(action==='del'){ prods=prods.filter(function(x){ return x.id!==id; }); updStats(); renderVitrine(); }
+  el.innerHTML = html;
+  el.querySelectorAll('[data-action]').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var id = parseInt(this.dataset.id), action = this.dataset.action;
+      if (action === 'wpp') { var p = prods.find(function(x) { return x.id === id; }); if (p) { cnts.wpp++; updStats(); window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(montarMsgAchado(p)), '_blank'); } }
+      else if (action === 'copy') { var p2 = prods.find(function(x) { return x.id === id; }); if (p2) navigator.clipboard.writeText(montarMsgAchado(p2)).then(function() { alert('Copiado!'); }); }
+      else if (action === 'del') { prods = prods.filter(function(x) { return x.id !== id; }); updStats(); renderVitrine(); }
     });
   });
 }
 
-function enviarAchadoWpp(id){ var p=prods.find(function(x){ return x.id===id; }); if(!p) return; cnts.wpp++; updStats(); window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(montarMsgAchado(p)),'_blank'); }
-function copiarAchado(id){ var p=prods.find(function(x){ return x.id===id; }); if(!p) return; navigator.clipboard.writeText(montarMsgAchado(p)).then(function(){ alert('Copiado!'); }); }
-
-// ============================================================
-// CHAT IA
-// ============================================================
+// IA
 async function chamarIA(prompt, max) {
   var chave = localStorage.getItem('openrouter_key') || '';
-  if (!chave) throw new Error('Configure sua chave OpenRouter em Telegram > Config para usar a IA.');
-
-  var MODELS = [
-    'openrouter/auto',
-    'meta-llama/llama-3.3-70b-instruct:free',
-    'meta-llama/llama-3.1-8b-instruct:free',
-    'google/gemma-3-12b-it:free',
-    'mistralai/mistral-small-3.1-24b-instruct:free',
-    'deepseek/deepseek-r1-distill-llama-70b:free'
-  ];
-
+  if (!chave) throw new Error('Configure sua chave OpenRouter em Telegram > Config');
+  var MODELS = ['openrouter/auto', 'meta-llama/llama-3.3-70b-instruct:free', 'meta-llama/llama-3.1-8b-instruct:free', 'google/gemma-3-12b-it:free', 'mistralai/mistral-small-3.1-24b-instruct:free'];
   var lastError = null;
   for (var mi = 0; mi < MODELS.length; mi++) {
-    var model = MODELS[mi];
     try {
-      var r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': 'Bearer ' + chave,
-          'Content-Type': 'application/json',
-          'HTTP-Referer': window.location.href,
-          'X-Title': 'Shopee Viral Pro'
-        },
-        body: JSON.stringify({
-          model: model,
-          messages: [
-            { role: 'system', content: 'Especialista em vendas Shopee Brasil. Seja direto, pratico, use emojis. Responda sempre em portugues brasileiro.' },
-            { role: 'user', content: prompt }
-          ],
-          max_tokens: max || 1000
-        })
-      });
-
+      var r = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Authorization': 'Bearer ' + chave, 'Content-Type': 'application/json', 'HTTP-Referer': window.location.href, 'X-Title': 'Shopee Viral Pro' }, body: JSON.stringify({ model: MODELS[mi], messages: [{ role: 'system', content: 'Especialista em vendas Shopee Brasil. Seja direto, pratico, use emojis. Responda sempre em portugues brasileiro.' }, { role: 'user', content: prompt }], max_tokens: max || 1000 }) });
       var data = await r.json();
-
-      if (!r.ok) {
-        var eMsg = (data.error && data.error.message) ? data.error.message : ('Erro HTTP ' + r.status);
-        if (r.status === 400 || r.status === 404 ||
-            eMsg.indexOf('No endpoints') !== -1 ||
-            eMsg.indexOf('not a valid model') !== -1 ||
-            eMsg.indexOf('not found') !== -1) {
-          lastError = new Error(eMsg);
-          continue;
-        }
-        throw new Error(eMsg);
-      }
-
+      if (!r.ok) { var eMsg = (data.error && data.error.message) ? data.error.message : 'Erro HTTP ' + r.status; if (r.status === 400 || r.status === 404 || eMsg.indexOf('No endpoints') !== -1 || eMsg.indexOf('not a valid model') !== -1) { lastError = new Error(eMsg); continue; } throw new Error(eMsg); }
       var txt = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
-      if (!txt) { lastError = new Error('Resposta vazia de ' + model); continue; }
+      if (!txt) { lastError = new Error('Resposta vazia'); continue; }
       return txt;
-
-    } catch(e) {
-      if (e.message && (
-          e.message.indexOf('No endpoints') !== -1 ||
-          e.message.indexOf('not a valid model') !== -1 ||
-          e.message.indexOf('not found') !== -1)) {
-        lastError = e; continue;
-      }
-      throw e;
-    }
+    } catch(e) { if (e.message && (e.message.indexOf('No endpoints') !== -1 || e.message.indexOf('not a valid model') !== -1)) { lastError = e; continue; } throw e; }
   }
-  throw lastError || new Error('Nenhum modelo disponivel. Verifique sua chave em openrouter.ai');
+  throw lastError || new Error('Nenhum modelo disponivel');
 }
 
-function animBar(id){
-  var el=document.getElementById(id),p=0;
-  var t=setInterval(function(){ p+=Math.random()*11; if(p>=88) p=88; el.style.width=Math.min(p,100)+'%'; },180);
-  return function(){ el.style.width='100%'; clearInterval(t); };
+function animBar(id) {
+  var el = document.getElementById(id), p = 0;
+  var t = setInterval(function() { p += Math.random() * 11; if (p >= 88) p = 88; el.style.width = Math.min(p, 100) + '%'; }, 180);
+  return function() { el.style.width = '100%'; clearInterval(t); };
 }
 
-function renderItens(cont,items,pref,cores,fn){
-  var html='';
-  items.forEach(function(c,i){
-    var eid='ri_'+pref.replace(/ /g,'')+'_'+i;
-    html+='<div class="result-item"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">';
-    html+='<span class="badge '+cores[i]+'">'+pref+' '+(i+1)+'</span>';
-    html+='<div style="display:flex;gap:5px;"><button class="use-btn ri-use-btn" data-idx="'+i+'" data-fn="'+pref+'">Usar WPP</button>';
-    html+='<button class="copy-btn-sm ri-copy-btn" data-eid="'+eid+'">Copiar</button></div></div>';
-    html+='<div id="'+eid+'" class="result-txt">'+c+'</div></div>';
+function renderItens(cont, items, pref, cores) {
+  var html = '';
+  items.forEach(function(c, i) {
+    var eid = 'ri_' + i;
+    html += '<div class="result-item"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;"><span class="badge ' + cores[i] + '">' + pref + ' ' + (i + 1) + '</span><div style="display:flex;gap:5px;"><button class="use-btn ri-use-btn" data-idx="' + i + '" data-fn="' + pref + '">Usar WPP</button><button class="copy-btn-sm ri-copy-btn" data-eid="' + eid + '">Copiar</button></div></div><div id="' + eid + '" class="result-txt">' + c + '</div></div>';
   });
-  var el=document.getElementById(cont);
-  el.innerHTML=html;
-  el.querySelectorAll('.ri-use-btn').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var idx=parseInt(this.dataset.idx);
-      var fnPref=this.dataset.fn;
-      if(fnPref==='Copy') document.getElementById('wpp-texto').value=window._copies[idx]||'';
-      else if(fnPref==='Legenda') document.getElementById('wpp-texto').value=window._legendas[idx]||'';
+  var el = document.getElementById(cont);
+  el.innerHTML = html;
+  el.querySelectorAll('.ri-use-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      var idx = parseInt(this.dataset.idx), fnPref = this.dataset.fn;
+      if (fnPref === 'Copy') document.getElementById('wpp-texto').value = window._copies[idx] || '';
+      else if (fnPref === 'Legenda') document.getElementById('wpp-texto').value = window._legendas[idx] || '';
       prevWpp(); ir('wpp');
     });
   });
-  el.querySelectorAll('.ri-copy-btn').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var eid=this.dataset.eid;
-      navigator.clipboard.writeText(document.getElementById(eid).innerText).then(function(){ alert('Copiado!'); });
-    });
+  el.querySelectorAll('.ri-copy-btn').forEach(function(btn) {
+    btn.addEventListener('click', function() { navigator.clipboard.writeText(document.getElementById(this.dataset.eid).innerText).then(function() { alert('Copiado!'); }); });
   });
 }
 
-async function gerarCopy(){
-  var prod=document.getElementById('cp-prod').value.trim();
-  if(!prod){ alert('Informe o produto!'); return; }
-  document.getElementById('res-cp').style.display='none';
-  document.getElementById('load-cp').style.display='block';
-  document.getElementById('btn-cp').disabled=true;
-  var parar=animBar('bar-cp');
-  try{
-    var txt=await chamarIA('Crie 3 copies de '+document.getElementById('cp-tipo').value+' para: '+prod+'. Canal: '+document.getElementById('cp-canal').value+(document.getElementById('cp-diff').value?'. Diferencial: '+document.getElementById('cp-diff').value:'')+'. Formato:\n\nCOPY 1:\n[texto]\n\nCOPY 2:\n[texto]\n\nCOPY 3:\n[texto]',1200);
-    window._copies=[];
-    for(var i=1;i<=3;i++){
-      var re=new RegExp('COPY '+i+':[\\s\\S]*?(?=COPY '+(i+1)+':|$)','i');
-      var m=txt.match(re);
-      window._copies.push(m?m[0].replace(/COPY \d+:/i,'').trim():(i===1?txt:''));
-    }
-    cnts.copy++; updStats(); parar();
-    renderItens('cp-content',window._copies,'Copy',['badge-r','badge-b','badge-g'],'Copy');
-    document.getElementById('res-cp').style.display='block';
-  }catch(e){ alert('Erro: '+e.message); }
-  document.getElementById('load-cp').style.display='none';
-  document.getElementById('btn-cp').disabled=false;
+async function gerarCopy() {
+  var prod = document.getElementById('cp-prod').value.trim(); if (!prod) { alert('Informe o produto!'); return; }
+  document.getElementById('res-cp').style.display = 'none'; document.getElementById('load-cp').style.display = 'block'; document.getElementById('btn-cp').disabled = true;
+  var parar = animBar('bar-cp');
+  try {
+    var txt = await chamarIA('Crie 3 copies de ' + document.getElementById('cp-tipo').value + ' para: ' + prod + '. Canal: ' + document.getElementById('cp-canal').value + (document.getElementById('cp-diff').value ? '. Diferencial: ' + document.getElementById('cp-diff').value : '') + '. Formato:\n\nCOPY 1:\n[texto]\n\nCOPY 2:\n[texto]\n\nCOPY 3:\n[texto]', 1200);
+    window._copies = [];
+    for (var i = 1; i <= 3; i++) { var re = new RegExp('COPY ' + i + ':[\\s\\S]*?(?=COPY ' + (i + 1) + ':|$)', 'i'); var m = txt.match(re); window._copies.push(m ? m[0].replace(/COPY \d+:/i, '').trim() : (i === 1 ? txt : '')); }
+    cnts.copy++; updStats(); parar(); renderItens('cp-content', window._copies, 'Copy', ['badge-r', 'badge-b', 'badge-g']); document.getElementById('res-cp').style.display = 'block';
+  } catch(e) { alert('Erro: ' + e.message); }
+  document.getElementById('load-cp').style.display = 'none'; document.getElementById('btn-cp').disabled = false;
 }
 
-async function gerarRoteiro(){
-  var prod=document.getElementById('vd-prod').value.trim();
-  if(!prod){ alert('Informe o produto!'); return; }
-  document.getElementById('res-vd').style.display='none';
-  document.getElementById('load-vd').style.display='block';
-  document.getElementById('btn-vd').disabled=true;
-  var parar=animBar('bar-vd');
-  try{
-    var txt=await chamarIA('Roteiro viral de '+document.getElementById('vd-dur').value+' para: '+prod+'. Formato: '+document.getElementById('vd-fmt').value+(document.getElementById('vd-pub').value?'. Publico: '+document.getElementById('vd-pub').value:'')+'. Estruture:\n[GANCHO 0-3s]\n[MEIO]\n[CTA FINAL]',1200);
-    window._roteiro=txt; parar();
-    document.getElementById('vd-content').innerHTML='<div style="font-size:13px;color:#333;line-height:1.9;white-space:pre-wrap;background:#fff8f6;border-radius:12px;padding:12px;">'+txt+'</div>';
-    document.getElementById('res-vd').style.display='block';
-    document.getElementById('lg-prod').value=prod;
-  }catch(e){ alert('Erro: '+e.message); }
-  document.getElementById('load-vd').style.display='none';
-  document.getElementById('btn-vd').disabled=false;
+async function gerarRoteiro() {
+  var prod = document.getElementById('vd-prod').value.trim(); if (!prod) { alert('Informe o produto!'); return; }
+  document.getElementById('res-vd').style.display = 'none'; document.getElementById('load-vd').style.display = 'block'; document.getElementById('btn-vd').disabled = true;
+  var parar = animBar('bar-vd');
+  try {
+    var txt = await chamarIA('Roteiro viral de ' + document.getElementById('vd-dur').value + ' para: ' + prod + '. Formato: ' + document.getElementById('vd-fmt').value + (document.getElementById('vd-pub').value ? '. Publico: ' + document.getElementById('vd-pub').value : '') + '. Estruture:\n[GANCHO 0-3s]\n[MEIO]\n[CTA FINAL]', 1200);
+    window._roteiro = txt; parar(); document.getElementById('vd-content').innerHTML = '<div style="font-size:13px;color:#333;line-height:1.9;white-space:pre-wrap;background:#fff8f6;border-radius:12px;padding:12px;">' + txt + '</div>'; document.getElementById('res-vd').style.display = 'block'; document.getElementById('lg-prod').value = prod;
+  } catch(e) { alert('Erro: ' + e.message); }
+  document.getElementById('load-vd').style.display = 'none'; document.getElementById('btn-vd').disabled = false;
 }
 
-async function gerarLegenda(){
-  var prod=document.getElementById('lg-prod').value.trim();
-  if(!prod){ alert('Informe o produto!'); return; }
-  document.getElementById('res-lg').style.display='none';
-  document.getElementById('load-lg').style.display='block';
-  document.getElementById('btn-lg').disabled=true;
-  var parar=animBar('bar-lg');
-  try{
-    var txt=await chamarIA('Crie 3 legendas virais para '+document.getElementById('lg-plat').value+' para: '+prod+'. Tom: '+document.getElementById('lg-tom').value+'. Formato:\n\nLEGENDA 1:\n[texto]\n\nLEGENDA 2:\n[texto]\n\nLEGENDA 3:\n[texto]',1000);
-    window._legendas=[];
-    for(var i=1;i<=3;i++){
-      var re=new RegExp('LEGENDA '+i+':[\\s\\S]*?(?=LEGENDA '+(i+1)+':|$)','i');
-      var m=txt.match(re);
-      window._legendas.push(m?m[0].replace(/LEGENDA \d+:/i,'').trim():(i===1?txt:''));
-    }
+async function gerarLegenda() {
+  var prod = document.getElementById('lg-prod').value.trim(); if (!prod) { alert('Informe o produto!'); return; }
+  document.getElementById('res-lg').style.display = 'none'; document.getElementById('load-lg').style.display = 'block'; document.getElementById('btn-lg').disabled = true;
+  var parar = animBar('bar-lg');
+  try {
+    var txt = await chamarIA('Crie 3 legendas virais para ' + document.getElementById('lg-plat').value + ' para: ' + prod + '. Tom: ' + document.getElementById('lg-tom').value + '. Formato:\n\nLEGENDA 1:\n[texto]\n\nLEGENDA 2:\n[texto]\n\nLEGENDA 3:\n[texto]', 1000);
+    window._legendas = [];
+    for (var i = 1; i <= 3; i++) { var re = new RegExp('LEGENDA ' + i + ':[\\s\\S]*?(?=LEGENDA ' + (i + 1) + ':|$)', 'i'); var m = txt.match(re); window._legendas.push(m ? m[0].replace(/LEGENDA \d+:/i, '').trim() : (i === 1 ? txt : '')); }
+    parar(); renderItens('lg-content', window._legendas, 'Legenda', ['badge-r', 'badge-b', 'badge-g']); document.getElementById('res-lg').style.display = 'block';
+  } catch(e) { alert('Erro: ' + e.message); }
+  document.getElementById('load-lg').style.display = 'none'; document.getElementById('btn-lg').disabled = false;
+}
+
+window._kitTexto = '';
+async function gerarKitCompleto() {
+  var prod = document.getElementById('kit-prod').value.trim(), preco2 = document.getElementById('kit-preco').value.trim(), diff = document.getElementById('kit-diff').value.trim(), link = document.getElementById('kit-link').value.trim();
+  if (!prod) { alert('Informe o produto!'); return; }
+  document.getElementById('res-kit').style.display = 'none'; document.getElementById('load-kit').style.display = 'block'; document.getElementById('btn-kit').disabled = true;
+  var parar = animBar('bar-kit'), status = document.getElementById('kit-status'), copy2 = '', legenda = '', roteiro2 = '', wppMsg = '';
+  try {
+    status.textContent = '1/4 Gerando copy...'; copy2 = await chamarIA('Crie a MELHOR copy de venda WhatsApp para: ' + prod + (preco2 ? ' por ' + preco2 : '') + (diff ? '. ' + diff : '') + '. Gatilhos mentais, urgencia, CTA.', 800);
+    status.textContent = '2/4 Gerando legenda...'; legenda = await chamarIA('Legenda viral TikTok/Reels para: ' + prod + (preco2 ? ' por ' + preco2 : '') + '. Girias, emojis, hashtags.', 600);
+    status.textContent = '3/4 Gerando roteiro...'; roteiro2 = await chamarIA('Roteiro viral 30s para: ' + prod + (preco2 ? ' por ' + preco2 : '') + '. [GANCHO 0-3s], [MEIO 3-25s], [CTA 25-30s].', 800);
+    status.textContent = '4/4 Montando mensagem...'; wppMsg = await chamarIA('Mensagem para grupo WhatsApp para: ' + prod + (preco2 ? ' por ' + preco2 : '') + (diff ? '. ' + diff : '') + (link ? '\nLink: ' + link : '') + '. Com emojis, urgencia e *negrito* WhatsApp.', 600);
     parar();
-    renderItens('lg-content',window._legendas,'Legenda',['badge-r','badge-b','badge-g'],'Legenda');
-    document.getElementById('res-lg').style.display='block';
-  }catch(e){ alert('Erro: '+e.message); }
-  document.getElementById('load-lg').style.display='none';
-  document.getElementById('btn-lg').disabled=false;
+    window._kitTexto = 'KIT DE LANCAMENTO\n=======\nProduto: ' + prod + '\n\nCOPY:\n' + copy2 + '\n\nLEGENDA:\n' + legenda + '\n\nROTEIRO:\n' + roteiro2 + '\n\nWHATSAPP:\n' + wppMsg + (link ? '\n\n' + link : '');
+    var secs = [{ t: '✍️ Copy de vendas', c: '#EE4D2D', txt: copy2 }, { t: '🔥 Legenda viral', c: '#185FA5', txt: legenda }, { t: '🎬 Roteiro de video', c: '#3B6D11', txt: roteiro2 }, { t: '💬 Mensagem WhatsApp', c: '#25D366', txt: wppMsg + (link ? '\n\n' + link : '') }];
+    var html = '';
+    secs.forEach(function(s, si) {
+      html += '<div class="kit-step" style="border-left-color:' + s.c + '"><div class="kit-step-title" style="color:' + s.c + '">' + s.t + '</div><div class="kit-step-content" id="kit-sec-' + si + '">' + s.txt + '</div>';
+      html += '<div style="display:flex;gap:6px;margin-top:8px;"><button class="kit-copy-btn" data-si="' + si + '">📋 Copiar</button>';
+      if (si === 3) html += '<button class="kit-copy-btn kit-wpp-btn" data-si="' + si + '" style="background:#e8f5e1;color:#1a6e35;">💬 WPP</button>';
+      html += '</div></div>';
+    });
+    var kitEl = document.getElementById('kit-content'); kitEl.innerHTML = html;
+    kitEl.querySelectorAll('.kit-copy-btn').forEach(function(btn) { btn.addEventListener('click', function() { navigator.clipboard.writeText(document.getElementById('kit-sec-' + this.dataset.si).innerText).then(function() { alert('Copiado!'); }); }); });
+    kitEl.querySelectorAll('.kit-wpp-btn').forEach(function(btn) { btn.addEventListener('click', function() { window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(document.getElementById('kit-sec-' + this.dataset.si).innerText), '_blank'); }); });
+    document.getElementById('res-kit').style.display = 'block'; cnts.copy += 4; updStats();
+  } catch(e) { alert('Erro: ' + e.message); }
+  document.getElementById('load-kit').style.display = 'none'; document.getElementById('btn-kit').disabled = false;
 }
 
-window._kitTexto='';
-async function gerarKitCompleto(){
-  var prod=document.getElementById('kit-prod').value.trim();
-  var preco2=document.getElementById('kit-preco').value.trim();
-  var diff=document.getElementById('kit-diff').value.trim();
-  var link=document.getElementById('kit-link').value.trim();
-  if(!prod){ alert('Informe o produto!'); return; }
-  document.getElementById('res-kit').style.display='none';
-  document.getElementById('load-kit').style.display='block';
-  document.getElementById('btn-kit').disabled=true;
-  var parar=animBar('bar-kit');
-  var status=document.getElementById('kit-status');
-  var copy2='',legenda='',roteiro2='',wppMsg='';
-  try{
-    status.textContent='1/4 Gerando copy...';
-    copy2=await chamarIA('Crie a MELHOR copy de venda WhatsApp para: '+prod+(preco2?' por '+preco2:'')+(diff?'. '+diff:'')+'. Gatilhos mentais, urgencia, CTA.',800);
-    status.textContent='2/4 Gerando legenda...';
-    legenda=await chamarIA('Legenda viral TikTok/Reels para: '+prod+(preco2?' por '+preco2:'')+'. Girias, emojis, hashtags.',600);
-    status.textContent='3/4 Gerando roteiro...';
-    roteiro2=await chamarIA('Roteiro viral 30s para: '+prod+(preco2?' por '+preco2:'')+'. [GANCHO 0-3s], [MEIO 3-25s], [CTA 25-30s].',800);
-    status.textContent='4/4 Montando mensagem...';
-    wppMsg=await chamarIA('Mensagem para grupo WhatsApp para: '+prod+(preco2?' por '+preco2:'')+(diff?'. '+diff:'')+(link?'\nLink: '+link:'')+'. Com emojis, urgencia e *negrito* WhatsApp.',600);
-    parar();
-    window._kitTexto='KIT DE LANCAMENTO\n=======\nProduto: '+prod+'\n\nCOPY:\n'+copy2+'\n\nLEGENDA:\n'+legenda+'\n\nROTEIRO:\n'+roteiro2+'\n\nWHATSAPP:\n'+wppMsg+(link?'\n\n'+link:'');
-    var secs=[
-      {t:'✍️ Copy de vendas',c:'#EE4D2D',txt:copy2},
-      {t:'🔥 Legenda viral',c:'#185FA5',txt:legenda},
-      {t:'🎬 Roteiro de video',c:'#3B6D11',txt:roteiro2},
-      {t:'💬 Mensagem WhatsApp',c:'#25D366',txt:wppMsg+(link?'\n\n'+link:'')}
-    ];
-    var html='';
-    secs.forEach(function(s,si){
-      html+='<div class="kit-step" style="border-left-color:'+s.c+'"><div class="kit-step-title" style="color:'+s.c+'">'+s.t+'</div><div class="kit-step-content" id="kit-sec-'+si+'">'+s.txt+'</div>';
-      html+='<div style="display:flex;gap:6px;margin-top:8px;"><button class="kit-copy-btn" data-si="'+si+'">📋 Copiar</button>';
-      if(si===3) html+='<button class="kit-copy-btn kit-wpp-btn" data-si="'+si+'" style="background:#e8f5e1;color:#1a6e35;">💬 WPP</button>';
-      html+='</div></div>';
-    });
-    var kitEl=document.getElementById('kit-content');
-    kitEl.innerHTML=html;
-    kitEl.querySelectorAll('.kit-copy-btn').forEach(function(btn){
-      btn.addEventListener('click',function(){
-        var txt2=document.getElementById('kit-sec-'+this.dataset.si).innerText;
-        navigator.clipboard.writeText(txt2).then(function(){ alert('Copiado!'); });
-      });
-    });
-    kitEl.querySelectorAll('.kit-wpp-btn').forEach(function(btn){
-      btn.addEventListener('click',function(){
-        var txt2=document.getElementById('kit-sec-'+this.dataset.si).innerText;
-        window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(txt2),'_blank');
-      });
-    });
-    document.getElementById('res-kit').style.display='block';
-    cnts.copy+=4; updStats();
-  }catch(e){ alert('Erro: '+e.message); }
-  document.getElementById('load-kit').style.display='none';
-  document.getElementById('btn-kit').disabled=false;
-}
-
-var chatHistorico=[];
-async function enviarChat(){
-  var msg=document.getElementById('chat-inp').value.trim();
-  if(!msg) return;
-  document.getElementById('chat-inp').value='';
-  var wrap=document.getElementById('chat-msgs');
-  var d1=document.createElement('div'); d1.className='chat-msg chat-user'; d1.textContent=msg; wrap.appendChild(d1);
-  chatHistorico.push({role:'user',content:msg});
-  var d2=document.createElement('div'); d2.className='chat-msg chat-ia'; d2.id='typing-msg'; d2.textContent='...'; wrap.appendChild(d2);
-  wrap.scrollTop=wrap.scrollHeight;
-  try{
-    var sysMsg = 'Voce e especialista em vendas Shopee, afiliados e marketing digital no Brasil. Seja direta, pratica, use emojis. Responda em portugues.';
-    var chave = localStorage.getItem('openrouter_key')||'';
-    if(!chave){ throw new Error('Configure sua chave OpenRouter em Telegram > Config!'); }
-
-    var MODELS = [
-      'openrouter/auto',
-      'meta-llama/llama-3.3-70b-instruct:free',
-      'meta-llama/llama-3.1-8b-instruct:free',
-      'google/gemma-3-12b-it:free',
-      'mistralai/mistral-small-3.1-24b-instruct:free',
-      'deepseek/deepseek-r1-distill-llama-70b:free'
-    ];
-    var resp = ''; var lastErr = null;
-    for(var mi=0; mi<MODELS.length; mi++){
-      try{
-        var r=await fetch('https://openrouter.ai/api/v1/chat/completions',{
-          method:'POST',
-          headers:{'Authorization':'Bearer '+chave,'Content-Type':'application/json','HTTP-Referer':window.location.href,'X-Title':'Shopee Viral Pro'},
-          body:JSON.stringify({model:MODELS[mi],messages:[{role:'system',content:sysMsg}].concat(chatHistorico.slice(-8)),max_tokens:500})
-        });
-        var dd=await r.json();
-        if(!r.ok){
-          var em=(dd.error&&dd.error.message)?dd.error.message:'Erro';
-          if(r.status===400||r.status===404||em.indexOf('No endpoints')!==-1||em.indexOf('not a valid model')!==-1||em.indexOf('not found')!==-1){lastErr=new Error(em);continue;}
-          throw new Error(em);
-        }
-        resp=(dd.choices&&dd.choices[0]&&dd.choices[0].message&&dd.choices[0].message.content)||'';
-        if(resp) break;
-        lastErr=new Error('Resposta vazia de '+MODELS[mi]);
-      }catch(ex){
-        if(ex.message&&(ex.message.indexOf('No endpoints')!==-1||ex.message.indexOf('not a valid model')!==-1||ex.message.indexOf('not found')!==-1)){lastErr=ex;continue;}
-        throw ex;
-      }
-    }
-    if(!resp) throw lastErr||new Error('Nenhum modelo disponivel.');
-
-    var typing=document.getElementById('typing-msg'); if(typing) typing.remove();
-    chatHistorico.push({role:'assistant',content:resp});
-    var d3=document.createElement('div'); d3.className='chat-msg chat-ia'; d3.textContent=resp; wrap.appendChild(d3);
-    wrap.scrollTop=wrap.scrollHeight;
-  }catch(e){
-    var typing2=document.getElementById('typing-msg'); if(typing2) typing2.remove();
-    var d4=document.createElement('div'); d4.className='chat-msg chat-ia'; d4.textContent='Erro: '+e.message; wrap.appendChild(d4);
-    wrap.scrollTop=wrap.scrollHeight;
+var chatHistorico = [];
+async function enviarChat() {
+  var msg = document.getElementById('chat-inp').value.trim(); if (!msg) return;
+  document.getElementById('chat-inp').value = '';
+  var wrap = document.getElementById('chat-msgs');
+  var d1 = document.createElement('div'); d1.className = 'chat-msg chat-user'; d1.textContent = msg; wrap.appendChild(d1);
+  chatHistorico.push({ role: 'user', content: msg });
+  var d2 = document.createElement('div'); d2.className = 'chat-msg chat-ia'; d2.id = 'typing-msg'; d2.textContent = '...'; wrap.appendChild(d2);
+  wrap.scrollTop = wrap.scrollHeight;
+  try {
+    var resp = await chamarIA(msg, 500);
+    var typing = document.getElementById('typing-msg'); if (typing) typing.remove();
+    chatHistorico.push({ role: 'assistant', content: resp });
+    var d3 = document.createElement('div'); d3.className = 'chat-msg chat-ia'; d3.textContent = resp; wrap.appendChild(d3); wrap.scrollTop = wrap.scrollHeight;
+  } catch(e) {
+    var t2 = document.getElementById('typing-msg'); if (t2) t2.remove();
+    var d4 = document.createElement('div'); d4.className = 'chat-msg chat-ia'; d4.textContent = 'Erro: ' + e.message; wrap.appendChild(d4); wrap.scrollTop = wrap.scrollHeight;
   }
 }
+function perguntaRapida(txt) { document.getElementById('chat-inp').value = txt; enviarChat(); }
 
-function perguntaRapida(txt){ document.getElementById('chat-inp').value=txt; enviarChat(); }
-
-function calcularComissao(){
-  var preco3=parseFloat((document.getElementById('calc-preco').value||'0').replace(',','.'));
-  var pct=parseFloat(document.getElementById('calc-pct').value||'5');
-  if(!preco3){ document.getElementById('calc-resultado').style.display='none'; return; }
-  var pv=preco3*(pct/100);
-  document.getElementById('calc-por-venda').textContent='R$'+pv.toFixed(2).replace('.',',');
-  document.getElementById('calc-10v').textContent='R$'+(pv*10).toFixed(0);
-  document.getElementById('calc-50v').textContent='R$'+(pv*50).toFixed(0);
-  document.getElementById('calc-100v').textContent='R$'+(pv*100).toFixed(0);
-  document.getElementById('calc-meta').textContent='Para pagar o app (R$47) precisa de '+Math.ceil(47/pv)+' vendas deste produto.';
-  document.getElementById('calc-resultado').style.display='block';
+function calcularComissao() {
+  var preco3 = parseFloat((document.getElementById('calc-preco').value || '0').replace(',', '.')), pct = parseFloat(document.getElementById('calc-pct').value || '5');
+  if (!preco3) { document.getElementById('calc-resultado').style.display = 'none'; return; }
+  var pv = preco3 * (pct / 100);
+  document.getElementById('calc-por-venda').textContent = 'R$' + pv.toFixed(2).replace('.', ',');
+  document.getElementById('calc-10v').textContent = 'R$' + (pv * 10).toFixed(0);
+  document.getElementById('calc-50v').textContent = 'R$' + (pv * 50).toFixed(0);
+  document.getElementById('calc-100v').textContent = 'R$' + (pv * 100).toFixed(0);
+  document.getElementById('calc-meta').textContent = 'Para pagar o app (R$47) precisa de ' + Math.ceil(47 / pv) + ' vendas deste produto.';
+  document.getElementById('calc-resultado').style.display = 'block';
 }
 
-var _seoTexto='';
-async function gerarSEO(){
-  var prod=document.getElementById('seo-prod').value.trim();
-  if(!prod){ alert('Informe o produto!'); return; }
-  document.getElementById('res-seo').style.display='none';
-  document.getElementById('load-seo').style.display='block';
-  document.getElementById('btn-seo').disabled=true;
-  var parar=animBar('bar-seo');
-  try{
-    var txt=await chamarIA('Titulo e descricao SEO para Shopee: '+prod+'. Keywords: '+document.getElementById('seo-keys').value+'. Detalhes: '+document.getElementById('seo-diff').value+'. Formate:\n\nTITULO SEO:\n[titulo max 100 chars]\n\nDESCRICAO:\n[descricao completa]\n\nTAGS:\n[tags]',900);
-    _seoTexto=txt; parar();
-    document.getElementById('seo-content').innerHTML='<div style="font-size:13px;color:#333;line-height:1.9;white-space:pre-wrap;background:#fff8f6;border-radius:12px;padding:12px;">'+txt+'</div>';
-    document.getElementById('res-seo').style.display='block';
-  }catch(e){ alert('Erro: '+e.message); }
-  document.getElementById('load-seo').style.display='none';
-  document.getElementById('btn-seo').disabled=false;
+var _seoTexto = '';
+async function gerarSEO() {
+  var prod = document.getElementById('seo-prod').value.trim(); if (!prod) { alert('Informe o produto!'); return; }
+  document.getElementById('res-seo').style.display = 'none'; document.getElementById('load-seo').style.display = 'block'; document.getElementById('btn-seo').disabled = true;
+  var parar = animBar('bar-seo');
+  try {
+    var txt = await chamarIA('Titulo e descricao SEO para Shopee: ' + prod + '. Keywords: ' + document.getElementById('seo-keys').value + '. Detalhes: ' + document.getElementById('seo-diff').value + '. Formate:\n\nTITULO SEO:\n[titulo max 100 chars]\n\nDESCRICAO:\n[descricao completa]\n\nTAGS:\n[tags]', 900);
+    _seoTexto = txt; parar();
+    document.getElementById('seo-content').innerHTML = '<div style="font-size:13px;color:#333;line-height:1.9;white-space:pre-wrap;background:#fff8f6;border-radius:12px;padding:12px;">' + txt + '</div>';
+    document.getElementById('res-seo').style.display = 'block';
+  } catch(e) { alert('Erro: ' + e.message); }
+  document.getElementById('load-seo').style.display = 'none'; document.getElementById('btn-seo').disabled = false;
 }
-function copiarSEO(){ navigator.clipboard.writeText(_seoTexto).then(function(){ alert('Copiado!'); }); }
+function copiarSEO() { navigator.clipboard.writeText(_seoTexto).then(function() { alert('Copiado!'); }); }
 
-async function reescreverCopy(){
-  var texto=document.getElementById('reesc-texto').value.trim();
-  if(!texto){ alert('Cole uma copy!'); return; }
-  document.getElementById('btn-reesc').disabled=true;
-  document.getElementById('btn-reesc').textContent='Reescrevendo...';
-  try{
-    var txt=await chamarIA('Reescreva esta copy '+document.getElementById('reesc-obj').value+'. Copy: "'+texto+'"',600);
-    var div=document.createElement('div');
-    div.style.cssText='background:#fff8f6;border-radius:12px;padding:12px;font-size:13px;color:#333;line-height:1.7;white-space:pre-wrap;';
-    div.textContent=txt;
-    var btns=document.createElement('div'); btns.style.cssText='display:flex;gap:6px;margin-top:8px;';
-    var b1=document.createElement('button'); b1.className='kit-copy-btn'; b1.textContent='📋 Copiar';
-    b1.onclick=function(){ navigator.clipboard.writeText(div.textContent).then(function(){ alert('Copiado!'); }); };
-    var b2=document.createElement('button'); b2.className='kit-copy-btn'; b2.style.cssText='background:#e8f5e1;color:#1a6e35;'; b2.textContent='💬 Usar no WPP';
-    b2.onclick=function(){ document.getElementById('wpp-texto').value=div.textContent; prevWpp(); ir('wpp'); };
-    btns.appendChild(b1); btns.appendChild(b2);
-    var el=document.getElementById('res-reesc'); el.innerHTML=''; el.appendChild(div); el.appendChild(btns); el.style.display='block';
-  }catch(e){ alert('Erro: '+e.message); }
-  document.getElementById('btn-reesc').disabled=false;
-  document.getElementById('btn-reesc').textContent='🔄 Reescrever com IA';
+async function reescreverCopy() {
+  var texto = document.getElementById('reesc-texto').value.trim(); if (!texto) { alert('Cole uma copy!'); return; }
+  document.getElementById('btn-reesc').disabled = true; document.getElementById('btn-reesc').textContent = 'Reescrevendo...';
+  try {
+    var txt = await chamarIA('Reescreva esta copy ' + document.getElementById('reesc-obj').value + '. Copy: "' + texto + '"', 600);
+    var el = document.getElementById('res-reesc');
+    el.innerHTML = '<div style="background:#fff8f6;border-radius:12px;padding:12px;font-size:13px;color:#333;line-height:1.7;white-space:pre-wrap;" id="reesc-result">' + txt + '</div><div style="display:flex;gap:6px;margin-top:8px;"><button class="kit-copy-btn" onclick="navigator.clipboard.writeText(document.getElementById(\'reesc-result\').innerText).then(function(){alert(\'Copiado!\')})">📋 Copiar</button></div>';
+    el.style.display = 'block';
+  } catch(e) { alert('Erro: ' + e.message); }
+  document.getElementById('btn-reesc').disabled = false; document.getElementById('btn-reesc').textContent = '🔄 Reescrever com IA';
 }
 
-async function gerarHashtags(){
-  var prod=document.getElementById('hash-prod').value.trim();
-  if(!prod){ alert('Informe o produto ou nicho!'); return; }
-  document.getElementById('btn-hash').disabled=true;
-  document.getElementById('btn-hash').textContent='Gerando...';
-  try{
-    var txt=await chamarIA('30 hashtags para '+document.getElementById('hash-plat').value+' para: '+prod+'. Divida em:\n\nVIRAIS (10):\n\nMEDIAS (10):\n\nNICHO (10):\n\nSo em portugues.',500);
-    var el=document.getElementById('res-hash');
-    el.innerHTML='<div style="background:#fff8f6;border-radius:12px;padding:12px;font-size:13px;color:#333;line-height:2;white-space:pre-wrap;">'+txt+'</div>';
-    var btn=document.createElement('button'); btn.className='kit-copy-btn'; btn.style.marginTop='10px'; btn.textContent='📋 Copiar todas';
-    btn.onclick=function(){ navigator.clipboard.writeText(txt).then(function(){ alert('Copiado!'); }); };
-    el.appendChild(btn); el.style.display='block';
-  }catch(e){ alert('Erro: '+e.message); }
-  document.getElementById('btn-hash').disabled=false;
-  document.getElementById('btn-hash').textContent='🏷️ Gerar 30 hashtags';
+async function gerarHashtags() {
+  var prod = document.getElementById('hash-prod').value.trim(); if (!prod) { alert('Informe o produto ou nicho!'); return; }
+  document.getElementById('btn-hash').disabled = true; document.getElementById('btn-hash').textContent = 'Gerando...';
+  try {
+    var txt = await chamarIA('30 hashtags para ' + document.getElementById('hash-plat').value + ' para: ' + prod + '. Divida em:\n\nVIRAIS (10):\n\nMEDIAS (10):\n\nNICHO (10):\n\nSo em portugues.', 500);
+    var el = document.getElementById('res-hash');
+    el.innerHTML = '<div style="background:#fff8f6;border-radius:12px;padding:12px;font-size:13px;color:#333;line-height:2;white-space:pre-wrap;" id="hash-result">' + txt + '</div><button class="kit-copy-btn" style="margin-top:10px;" onclick="navigator.clipboard.writeText(document.getElementById(\'hash-result\').innerText).then(function(){alert(\'Copiado!\')})">📋 Copiar todas</button>';
+    el.style.display = 'block';
+  } catch(e) { alert('Erro: ' + e.message); }
+  document.getElementById('btn-hash').disabled = false; document.getElementById('btn-hash').textContent = '🏷️ Gerar 30 hashtags';
 }
 
-function irWppDado(t){
-  var txt='';
-  if(t==='cp'&&window._copies&&window._copies[0]) txt=window._copies[0];
-  if(t==='lg'&&window._legendas&&window._legendas[0]) txt=window._legendas[0];
-  if(txt){ document.getElementById('wpp-texto').value=txt; prevWpp(); }
+function irWppDado(t) {
+  var txt = '';
+  if (t === 'cp' && window._copies && window._copies[0]) txt = window._copies[0];
+  if (t === 'lg' && window._legendas && window._legendas[0]) txt = window._legendas[0];
+  if (txt) { document.getElementById('wpp-texto').value = txt; prevWpp(); }
   ir('wpp');
 }
-function usarUltimoCopy(){ if(window._copies&&window._copies[0]){ document.getElementById('wpp-texto').value=window._copies[0]; prevWpp(); } }
-function usarUltimaLeg(){ if(window._legendas&&window._legendas[0]){ document.getElementById('wpp-texto').value=window._legendas[0]; prevWpp(); } }
-function usarUltimoAchado(){ if(prods.length){ document.getElementById('wpp-texto').value=montarMsgAchado(prods[prods.length-1]); prevWpp(); } else alert('Cadastre um achado primeiro!'); }
-function prevWpp(){ var t=document.getElementById('wpp-texto').value; var l=document.getElementById('wpp-link').value; document.getElementById('wpp-prev').textContent=(t+(l?'\n\n'+l:'')).trim()||'Preview aqui...'; }
-function enviarWpp(){ var t=document.getElementById('wpp-texto').value.trim(); var l=document.getElementById('wpp-link').value.trim(); var msg=(t+(l?'\n\n'+l:'')).trim(); if(!msg){ alert('Escreva a mensagem!'); return; } cnts.wpp++; updStats(); window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(msg),'_blank'); }
-function copiarWpp(){ var t=document.getElementById('wpp-texto').value; var l=document.getElementById('wpp-link').value; navigator.clipboard.writeText((t+(l?'\n\n'+l:'')).trim()).then(function(){ alert('Copiado!'); }); }
+function usarUltimoCopy() { if (window._copies && window._copies[0]) { document.getElementById('wpp-texto').value = window._copies[0]; prevWpp(); } }
+function usarUltimaLeg() { if (window._legendas && window._legendas[0]) { document.getElementById('wpp-texto').value = window._legendas[0]; prevWpp(); } }
+function usarUltimoAchado() { if (prods.length) { document.getElementById('wpp-texto').value = montarMsgAchado(prods[prods.length - 1]); prevWpp(); } else alert('Cadastre um achado primeiro!'); }
+function prevWpp() { var t = document.getElementById('wpp-texto').value, l = document.getElementById('wpp-link').value; document.getElementById('wpp-prev').textContent = (t + (l ? '\n\n' + l : '')).trim() || 'Preview aqui...'; }
+function enviarWpp() { var t = document.getElementById('wpp-texto').value.trim(), l = document.getElementById('wpp-link').value.trim(), msg = (t + (l ? '\n\n' + l : '')).trim(); if (!msg) { alert('Escreva a mensagem!'); return; } cnts.wpp++; updStats(); window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(msg), '_blank'); }
+function copiarWpp() { navigator.clipboard.writeText((document.getElementById('wpp-texto').value + (document.getElementById('wpp-link').value ? '\n\n' + document.getElementById('wpp-link').value : '')).trim()).then(function() { alert('Copiado!'); }); }
 
-function renderTpls(cat){
-  cat=cat||'promo';
-  var lista=(tpls[cat]||[]);
-  var html='';
-  lista.forEach(function(t,i){
-    html+='<div class="template-card" data-cat="'+cat+'" data-idx="'+i+'">';
-    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><div style="font-size:12px;font-weight:900;color:var(--r);">'+t.title+'</div><span class="badge '+t.badge+'">Usar</span></div>';
-    html+='<div style="font-size:12px;color:#555;">'+t.txt.substring(0,80).replace(/\n/g,' ')+'...</div></div>';
+function renderTpls(cat) {
+  cat = cat || 'promo';
+  var lista = tpls[cat] || [], html = '';
+  lista.forEach(function(t, i) {
+    html += '<div class="template-card" data-cat="' + cat + '" data-idx="' + i + '"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;"><div style="font-size:12px;font-weight:900;color:var(--r);">' + t.title + '</div><span class="badge ' + t.badge + '">Usar</span></div><div style="font-size:12px;color:#555;">' + t.txt.substring(0, 80).replace(/\n/g, ' ') + '...</div></div>';
   });
-  var el=document.getElementById('tpl-lista');
-  el.innerHTML=html;
-  el.querySelectorAll('.template-card').forEach(function(card){
-    card.addEventListener('click',function(){ editarTpl(this.dataset.cat,parseInt(this.dataset.idx)); });
-  });
+  var el = document.getElementById('tpl-lista'); el.innerHTML = html;
+  el.querySelectorAll('.template-card').forEach(function(card) { card.addEventListener('click', function() { editarTpl(this.dataset.cat, parseInt(this.dataset.idx)); }); });
 }
-function editarTpl(cat,i){ var t=tpls[cat][i]; document.getElementById('tpl-edit').value=t.txt; document.getElementById('tpl-editor').style.display='block'; prevTpl(); document.getElementById('tpl-editor').scrollIntoView({behavior:'smooth'}); }
-function prevTpl(){ var t=document.getElementById('tpl-edit').value; var l=document.getElementById('tpl-link').value; document.getElementById('tpl-prev').textContent=(t+(l?'\n\n'+l:'')).trim(); }
-function enviarTpl(){ var t=document.getElementById('tpl-edit').value; var l=document.getElementById('tpl-link').value; cnts.wpp++; updStats(); window.open('https://api.whatsapp.com/send?text='+encodeURIComponent((t+(l?'\n\n'+l:'')).trim()),'_blank'); }
-function copiarTpl(){ var t=document.getElementById('tpl-edit').value; var l=document.getElementById('tpl-link').value; navigator.clipboard.writeText((t+(l?'\n\n'+l:'')).trim()).then(function(){ alert('Copiado!'); }); }
+function editarTpl(cat, i) {
+  var t = tpls[cat][i];
+  document.getElementById('tpl-edit').value = t.txt;
+  document.getElementById('tpl-editor').style.display = 'block';
+  prevTpl(); document.getElementById('tpl-editor').scrollIntoView({ behavior: 'smooth' });
+}
+function prevTpl() { var t = document.getElementById('tpl-edit').value, l = document.getElementById('tpl-link').value; document.getElementById('tpl-prev').textContent = (t + (l ? '\n\n' + l : '')).trim(); }
+function enviarTpl() { var t = document.getElementById('tpl-edit').value, l = document.getElementById('tpl-link').value; cnts.wpp++; updStats(); window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent((t + (l ? '\n\n' + l : '')).trim()), '_blank'); }
+function copiarTpl() { navigator.clipboard.writeText((document.getElementById('tpl-edit').value + (document.getElementById('tpl-link').value ? '\n\n' + document.getElementById('tpl-link').value : '')).trim()).then(function() { alert('Copiado!'); }); }
+function baixar(nome, c) { var b = new Blob([c], { type: 'text/plain;charset=utf-8' }), u = URL.createObjectURL(b), a = document.createElement('a'); a.href = u; a.download = nome; a.click(); URL.revokeObjectURL(u); }
 
-function baixar(nome,c){ var b=new Blob([c],{type:'text/plain;charset=utf-8'}); var u=URL.createObjectURL(b); var a=document.createElement('a'); a.href=u; a.download=nome; a.click(); URL.revokeObjectURL(u); }
-
-// ============================================================
-// ============================================================
-// TELEGRAM BOT — SISTEMA PERSISTENTE (SW + Fallback)
-// ============================================================
-// ============================================================
-
-var tgAutoAtivo = false;
-var tgAutoIdx = 0;
-var tgFallbackTimer = null;       // fallback timer (quando SW não disponível)
+// Telegram
+var tgAutoAtivo = false, tgAutoIdx = 0, tgFallbackTimer = null;
 var tgIntervalo = parseInt(localStorage.getItem('tg_intervalo') || '10');
 var tgAutoDest = localStorage.getItem('tg_auto_dest') || 'ambos';
-var tgManDest = 'ambos';
-var tgManCDt = 'ambos';
-var tgManProdSel = null;
+var tgManDest = 'ambos', tgManCDt = 'ambos', tgManProdSel = null;
 
-// ── Badge UI do Service Worker ──────────────────────────────
 function atualizarBadgeSW() {
-  var wrap = document.getElementById('sw-badge-wrap');
-  var info = document.getElementById('sw-info-auto');
+  var wrap = document.getElementById('sw-badge-wrap'), info = document.getElementById('sw-info-auto');
   if (!wrap) return;
-  if (window._swOk) {
-    wrap.innerHTML = '<span class="sw-badge ok">✅ Service Worker ativo — envios continuam em background</span>';
-    if (info) info.textContent = '✅ Service Worker: o bot continua mesmo com a tela bloqueada!';
-  } else if ('serviceWorker' in navigator) {
-    wrap.innerHTML = '<span class="sw-badge warn">⚠️ Service Worker carregando... aguarde</span>';
-    if (info) info.textContent = '⏳ Aguardando Service Worker... mantenha a aba aberta.';
-  } else {
-    wrap.innerHTML = '<span class="sw-badge err">⚠️ Modo compatibilidade — mantenha a aba aberta no navegador</span>';
-    if (info) info.textContent = '⚠️ Seu navegador não suporta background total. Mantenha a aba aberta.';
-  }
+  wrap.innerHTML = '<span class="sw-badge ' + (window._swOk ? 'ok' : 'warn') + '">' + (window._swOk ? '✅ Service Worker ativo' : '⚠️ Modo compatibilidade') + '</span>';
+  if (info) info.textContent = window._swOk ? '✅ Bot continua mesmo com a tela bloqueada!' : '⚠️ Mantenha a aba aberta.';
 }
 
-// ── Salva estado no localStorage para reconexão ─────────────
-function tgSalvarEstadoAuto(ativo) {
-  var cfg = {
-    ativo: ativo,
-    token: localStorage.getItem('tg_token') || '',
-    canal: localStorage.getItem('tg_canal') || '',
-    grupo: localStorage.getItem('tg_grupo') || '',
-    dest: tgAutoDest,
-    intervaloMin: tgIntervalo,
-    produtos: npGetLista(),
-    ts: Date.now()
-  };
-  localStorage.setItem('tg_auto_state', JSON.stringify(cfg));
-}
-
-function tgCarregarEstadoAuto() {
-  try {
-    var s = JSON.parse(localStorage.getItem('tg_auto_state') || 'null');
-    return s;
-  } catch(e) { return null; }
-}
-
-// ── Envia msg para SW ───────────────────────────────────────
-async function tgSwCmd(type, payload) {
-  if (!window._swOk) return false;
-  try {
-    var result = await swEnviarMensagem(type, payload);
-    return result && result.ok;
-  } catch(e) { return false; }
-}
-
-// ── Log helper (escreve nos 3 logs + salva no localStorage) ─
 function tgLogApp(msg, tipo) {
-  // Salva últimos 50 logs para reconexão
-  var logs = JSON.parse(localStorage.getItem('tg_logs') || '[]');
-  logs.unshift({ msg: msg, tipo: tipo, ts: Date.now() });
-  if (logs.length > 50) logs = logs.slice(0, 50);
-  localStorage.setItem('tg_logs', JSON.stringify(logs));
-
   ['tg-log', 'tg-log-auto', 'tg-log-manual'].forEach(function(id) {
     var el = document.getElementById(id); if (!el) return;
-    var p = document.createElement('p'); p.className = tipo || '';
-    p.textContent = '[' + new Date().toLocaleTimeString('pt-BR') + '] ' + msg;
+    var p = document.createElement('p'); p.className = tipo || ''; p.textContent = '[' + new Date().toLocaleTimeString('pt-BR') + '] ' + msg;
     el.appendChild(p); el.scrollTop = el.scrollHeight;
-    // Limita linhas no DOM
     while (el.children.length > 30) el.removeChild(el.firstChild);
   });
 }
 
-// ── Iniciar automático ──────────────────────────────────────
 async function tgIniciarAuto() {
   var prodsList = npGetLista().filter(function(p) { return p.ativo; });
   if (!prodsList.length) { alert('Cadastre pelo menos 1 produto ativo!'); return; }
-  var token = localStorage.getItem('tg_token') || '';
-  if (!token) { alert('Configure o token do bot primeiro!'); return; }
-
-  tgAutoAtivo = true;
-  tgSalvarEstadoAuto(true);
-  tgAtualizarUI(true);
-  tgLogApp('▶️ Envio automático iniciado! ' + prodsList.length + ' produto(s) · ' + tgIntervalo + 'min', 'ok');
-
-  if (window._swOk) {
-    // ── MODO SERVICE WORKER (persiste em background) ──
-    var ok = await tgSwCmd('TG_START', {
-      token: token,
-      canal: localStorage.getItem('tg_canal') || '',
-      grupo: localStorage.getItem('tg_grupo') || '',
-      dest: tgAutoDest,
-      intervaloMin: tgIntervalo,
-      produtos: prodsList
-    });
-    if (ok) {
-      tgLogApp('🤖 [SW] Bot rodando via Service Worker — funciona em background!', 'ok');
-    } else {
-      tgLogApp('⚠️ SW não respondeu, usando fallback...', 'warn');
-      tgIniciarFallback(prodsList, token);
-    }
-  } else {
-    // ── MODO FALLBACK (aba precisa ficar aberta) ──
-    tgIniciarFallback(prodsList, token);
-  }
-}
-
-function tgIniciarFallback(prodsList, token) {
-  tgLogApp('⚙️ Modo fallback ativo — mantenha a aba aberta', 'warn');
+  if (!localStorage.getItem('tg_token')) { alert('Configure o token do bot primeiro!'); return; }
+  tgAutoAtivo = true; tgAtualizarUI(true);
+  tgLogApp('▶️ Envio automatico iniciado! ' + prodsList.length + ' produto(s) · ' + tgIntervalo + 'min', 'ok');
   tgFallbackLoop();
 }
 
@@ -2016,211 +1464,100 @@ async function tgFallbackLoop() {
   if (!tgAutoAtivo) return;
   var prodsList = npGetLista().filter(function(p) { return p.ativo; });
   if (!prodsList.length) { tgPararAuto(); return; }
-  var prod = prodsList[tgAutoIdx % prodsList.length];
-  tgAutoIdx++;
-  tgLogApp('📤 Enviando: ' + prod.nome + '...', 'warn');
+  var prod = prodsList[tgAutoIdx % prodsList.length]; tgAutoIdx++;
   await tgEnviarParaDest(tgMontarOferta(prod), tgAutoDest);
   if (!tgAutoAtivo) return;
-  // Usa setTimeout recursivo — mais robusto que setInterval
   tgFallbackTimer = setTimeout(tgFallbackLoop, tgIntervalo * 60 * 1000);
 }
 
-// ── Parar automático ────────────────────────────────────────
 async function tgPararAuto() {
   tgAutoAtivo = false;
-  tgSalvarEstadoAuto(false);
-  // Para SW
-  if (window._swOk) await tgSwCmd('TG_STOP', {});
-  // Para fallback
   if (tgFallbackTimer) { clearTimeout(tgFallbackTimer); tgFallbackTimer = null; }
-  tgAtualizarUI(false);
-  tgLogApp('⏹ Envio automático parado.', 'warn');
+  tgAtualizarUI(false); tgLogApp('⏹ Envio automatico parado.', 'warn');
 }
 
-function tgToggleAuto() {
-  if (tgAutoAtivo) tgPararAuto(); else tgIniciarAuto();
-}
-
+function tgToggleAuto() { if (tgAutoAtivo) tgPararAuto(); else tgIniciarAuto(); }
 function tgAtualizarUI(ativo) {
   var btn = document.getElementById('btn-auto-toggle');
-  if (btn) {
-    btn.textContent = ativo ? '⏹ Parar Envio Automatico' : '▶️ Iniciar Envio Automatico';
-    btn.style.background = ativo ? '#c00' : '#0088cc';
-  }
+  if (btn) { btn.textContent = ativo ? '⏹ Parar Envio Automatico' : '▶️ Iniciar Envio Automatico'; btn.style.background = ativo ? '#c00' : '#0088cc'; }
   var st = document.getElementById('auto-status');
-  if (st) {
-    if (ativo) {
-      var n = npGetLista().filter(function(p) { return p.ativo; }).length;
-      st.style.display = 'block';
-      st.textContent = (window._swOk ? '🤖 [SW] ' : '⚙️ ') + 'Ativo! ' + n + ' produto(s) a cada ' + tgIntervalo + ' min';
-    } else {
-      st.style.display = 'none';
-    }
-  }
+  if (st) { if (ativo) { st.style.display = 'block'; st.textContent = 'Ativo! ' + npGetLista().filter(function(p) { return p.ativo; }).length + ' produto(s) a cada ' + tgIntervalo + ' min'; } else st.style.display = 'none'; }
 }
 
-// ── Reconectar ao recarregar a página ──────────────────────
-async function tgRestaurarEstado() {
-  var s = tgCarregarEstadoAuto();
-  if (!s || !s.ativo) return;
-  // Só restaura se menos de 1h passou (token ainda válido)
-  if (Date.now() - s.ts > 60 * 60 * 1000) return;
-  tgLogApp('🔄 Restaurando estado do bot automático...', 'warn');
-  // Restaura destino e intervalo
-  tgAutoDest = s.dest || 'ambos';
-  tgIntervalo = s.intervaloMin || 10;
-  await tgIniciarAuto();
-}
-
-// ── Salvar config ──────────────────────────────────────────
 function tgSalvar() {
-  var t = document.getElementById('tg-inp-token').value.trim();
-  var c = document.getElementById('tg-inp-canal').value.trim();
-  var g = document.getElementById('tg-inp-grupo').value.trim();
-  var o = document.getElementById('tg-inp-or').value.trim();
-  if (t) localStorage.setItem('tg_token', t);
-  if (c) localStorage.setItem('tg_canal', c);
-  if (g) localStorage.setItem('tg_grupo', g);
-  if (o) localStorage.setItem('openrouter_key', o);
-  // Atualiza produtos no SW se estiver ativo
-  if (tgAutoAtivo && window._swOk) {
-    tgSwCmd('TG_UPDATE_PRODUTOS', { produtos: npGetLista() });
-  }
+  var t = document.getElementById('tg-inp-token').value.trim(), c = document.getElementById('tg-inp-canal').value.trim(), g = document.getElementById('tg-inp-grupo').value.trim(), o = document.getElementById('tg-inp-or').value.trim();
+  if (t) localStorage.setItem('tg_token', t); if (c) localStorage.setItem('tg_canal', c); if (g) localStorage.setItem('tg_grupo', g); if (o) localStorage.setItem('openrouter_key', o);
   if (t) tgTestar(t);
 }
 
 async function tgTestar(token) {
   tgLogApp('Conectando...', 'warn');
   try {
-    var r = await fetch('https://api.telegram.org/bot' + token + '/getMe');
-    var d = await r.json();
-    if (d.ok) {
-      document.getElementById('tg-dot').classList.add('on');
-      document.getElementById('tg-status-txt').textContent = '✅ Conectado: @' + d.result.username;
-      tgLogApp('Bot @' + d.result.username + ' online!', 'ok');
-    } else {
-      tgLogApp('Token inválido!', 'err');
-    }
-  } catch(e) {
-    tgLogApp('Erro: ' + e.message, 'err');
-  }
+    var r = await fetch('https://api.telegram.org/bot' + token + '/getMe'); var d = await r.json();
+    if (d.ok) { document.getElementById('tg-dot').classList.add('on'); document.getElementById('tg-status-txt').textContent = '✅ Conectado: @' + d.result.username; tgLogApp('Bot @' + d.result.username + ' online!', 'ok'); }
+    else tgLogApp('Token invalido!', 'err');
+  } catch(e) { tgLogApp('Erro: ' + e.message, 'err'); }
 }
 
 async function tgSend(chatId, texto) {
-  var token = localStorage.getItem('tg_token') || '';
-  if (!token) { tgLogApp('Configure o token!', 'err'); return false; }
+  var token = localStorage.getItem('tg_token') || ''; if (!token) { tgLogApp('Configure o token!', 'err'); return false; }
   try {
-    var r = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ chat_id: chatId, text: texto, parse_mode: 'Markdown' }),
-      keepalive: true
-    });
+    var r = await fetch('https://api.telegram.org/bot' + token + '/sendMessage', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ chat_id: chatId, text: texto, parse_mode: 'Markdown' }) });
     var d = await r.json();
-    if (d.ok) { tgLogApp('Enviado para ' + chatId, 'ok'); return true; }
-    else { tgLogApp('Erro ' + chatId + ': ' + d.description, 'err'); return false; }
+    if (d.ok) { tgLogApp('Enviado para ' + chatId, 'ok'); return true; } else { tgLogApp('Erro ' + chatId + ': ' + d.description, 'err'); return false; }
   } catch(e) { tgLogApp('Erro: ' + e.message, 'err'); return false; }
 }
 
 async function tgEnviarParaDest(texto, dest) {
-  var canal = localStorage.getItem('tg_canal') || '';
-  var grupo = localStorage.getItem('tg_grupo') || '';
+  var canal = localStorage.getItem('tg_canal') || '', grupo = localStorage.getItem('tg_grupo') || '';
   if ((dest === 'canal' || dest === 'ambos') && canal) await tgSend(canal, texto);
   if ((dest === 'grupo' || dest === 'ambos') && grupo) await tgSend(grupo, texto);
 }
 
 function tgMontarOferta(prod) {
-  var e = prod.emoji || '🛍️';
-  var m = e + ' *OFERTA SHOPEE — ' + prod.nome.toUpperCase() + '*\n\n';
+  var e = prod.emoji || '🛍️', m = e + ' *OFERTA SHOPEE — ' + prod.nome.toUpperCase() + '*\n\n';
   if (prod.precoD) m += '~~De: ' + prod.precoD + '~~\n';
-  m += '💰 *Por apenas: ' + prod.preco + '*';
-  if (prod.desconto) m += ' — *' + prod.desconto + '*';
-  m += '\n\n';
+  m += '💰 *Por apenas: ' + prod.preco + '*'; if (prod.desconto) m += ' — *' + prod.desconto + '*'; m += '\n\n';
   if (prod.extra) m += prod.extra + '\n\n';
-  m += '🛒 *Compre agora:*\n' + prod.link + '\n\n✅ Frete grátis disponível!\n⏰ Estoque limitado!';
+  m += '🛒 *Compre agora:*\n' + prod.link + '\n\n✅ Frete gratis disponivel!\n⏰ Estoque limitado!';
   return m;
 }
 
 function npGetLista() { return JSON.parse(localStorage.getItem('tg_produtos') || '[]'); }
-function npSalvarLista(lista) {
-  localStorage.setItem('tg_produtos', JSON.stringify(lista));
-  // Atualiza produtos no SW se ativo
-  if (tgAutoAtivo && window._swOk) {
-    tgSwCmd('TG_UPDATE_PRODUTOS', { produtos: lista });
-  }
-  npRender(); autoRenderProds(); manualRenderProds();
-}
-
+function npSalvarLista(lista) { localStorage.setItem('tg_produtos', JSON.stringify(lista)); npRender(); autoRenderProds(); manualRenderProds(); }
 function npSalvar() {
-  var nome = document.getElementById('np-nome').value.trim();
-  var link = document.getElementById('np-link').value.trim();
+  var nome = document.getElementById('np-nome').value.trim(), link = document.getElementById('np-link').value.trim();
   if (!nome || !link) { alert('Preencha nome e link!'); return; }
   var lista = npGetLista();
-  lista.push({
-    id: Date.now(), nome: nome,
-    preco: document.getElementById('np-preco').value.trim() || 'Ver link',
-    precoD: document.getElementById('np-preco-de').value.trim(),
-    desconto: document.getElementById('np-desconto').value.trim(),
-    link: link,
-    emoji: document.getElementById('np-emoji').value.trim() || '🛍️',
-    extra: document.getElementById('np-extra').value.trim(),
-    ativo: true
-  });
+  lista.push({ id: Date.now(), nome: nome, preco: document.getElementById('np-preco').value.trim() || 'Ver link', precoD: document.getElementById('np-preco-de').value.trim(), desconto: document.getElementById('np-desconto').value.trim(), link: link, emoji: document.getElementById('np-emoji').value.trim() || '🛍️', extra: document.getElementById('np-extra').value.trim(), ativo: true });
   npSalvarLista(lista);
-  ['np-nome','np-preco','np-preco-de','np-desconto','np-link','np-emoji','np-extra'].forEach(function(id) {
-    var el = document.getElementById(id); if (el) el.value = '';
-  });
+  ['np-nome', 'np-preco', 'np-preco-de', 'np-desconto', 'np-link', 'np-emoji', 'np-extra'].forEach(function(id) { var el = document.getElementById(id); if (el) el.value = ''; });
   alert('Produto salvo!');
 }
-
 function npRender() {
-  var lista = npGetLista(); var c = document.getElementById('np-lista'); if (!c) return;
+  var lista = npGetLista(), c = document.getElementById('np-lista'); if (!c) return;
   if (!lista.length) { c.innerHTML = '<div class="empty-state"><div class="eicon">📦</div><p>Nenhum produto cadastrado.</p></div>'; return; }
   var html = '';
   lista.forEach(function(p) {
-    html += '<div class="prod-card"><div class="prod-card-top"><div><div class="prod-card-nome">' + p.emoji + ' ' + p.nome + '</div><div class="prod-card-preco">' + p.preco + (p.desconto ? ' · ' + p.desconto : '') + '</div></div>';
-    html += '<span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:' + (p.ativo ? '#e8f5e1' : '#f5f2ef') + ';color:' + (p.ativo ? '#1a6e35' : '#888') + '">' + (p.ativo ? 'Ativo' : 'Pausado') + '</span></div>';
-    html += '<div style="font-size:11px;color:#888;margin-bottom:8px;">' + p.link.substring(0, 50) + '...</div>';
-    html += '<div class="prod-card-btns"><button class="pcb pcb-tg np-tg-btn" data-id="' + p.id + '">✈️ TG</button><button class="pcb pcb-wpp np-wpp-btn" data-id="' + p.id + '">💬 WPP</button><button class="pcb pcb-edit np-toggle-btn" data-id="' + p.id + '">' + (p.ativo ? '⏸ Pausar' : '▶️ Ativar') + '</button><button class="pcb pcb-del np-del-btn" data-id="' + p.id + '">🗑️</button></div></div>';
+    html += '<div class="prod-card"><div class="prod-card-top"><div><div class="prod-card-nome">' + p.emoji + ' ' + p.nome + '</div><div class="prod-card-preco">' + p.preco + (p.desconto ? ' · ' + p.desconto : '') + '</div></div><span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:' + (p.ativo ? '#e8f5e1' : '#f5f2ef') + ';color:' + (p.ativo ? '#1a6e35' : '#888') + '">' + (p.ativo ? 'Ativo' : 'Pausado') + '</span></div><div style="font-size:11px;color:#888;margin-bottom:8px;">' + p.link.substring(0, 50) + '...</div><div class="prod-card-btns"><button class="pcb pcb-tg np-tg-btn" data-id="' + p.id + '">✈️ TG</button><button class="pcb pcb-wpp np-wpp-btn" data-id="' + p.id + '">💬 WPP</button><button class="pcb pcb-edit np-toggle-btn" data-id="' + p.id + '">' + (p.ativo ? '⏸ Pausar' : '▶️ Ativar') + '</button><button class="pcb pcb-del np-del-btn" data-id="' + p.id + '">🗑️</button></div></div>';
   });
   c.innerHTML = html;
-  c.querySelectorAll('.np-tg-btn').forEach(function(btn) { btn.addEventListener('click', function() { tgEnviarProd(parseInt(this.dataset.id)); }); });
-  c.querySelectorAll('.np-wpp-btn').forEach(function(btn) { btn.addEventListener('click', function() { wppEnviarProd(parseInt(this.dataset.id)); }); });
-  c.querySelectorAll('.np-toggle-btn').forEach(function(btn) { btn.addEventListener('click', function() { npToggle(parseInt(this.dataset.id)); }); });
-  c.querySelectorAll('.np-del-btn').forEach(function(btn) { btn.addEventListener('click', function() { npDel(parseInt(this.dataset.id)); }); });
+  c.querySelectorAll('.np-tg-btn').forEach(function(b) { b.addEventListener('click', function() { tgEnviarParaDest(tgMontarOferta(npGetLista().find(function(x) { return x.id === parseInt(b.dataset.id); })), tgManDest); }); });
+  c.querySelectorAll('.np-wpp-btn').forEach(function(b) { b.addEventListener('click', function() { var p = npGetLista().find(function(x) { return x.id === parseInt(b.dataset.id); }); if (p) window.open('https://wa.me/?text=' + encodeURIComponent(tgMontarOferta(p).replace(/\*/g, '').replace(/~~/g, '')), '_blank'); }); });
+  c.querySelectorAll('.np-toggle-btn').forEach(function(b) { b.addEventListener('click', function() { npSalvarLista(npGetLista().map(function(p) { return p.id === parseInt(b.dataset.id) ? Object.assign({}, p, { ativo: !p.ativo }) : p; })); }); });
+  c.querySelectorAll('.np-del-btn').forEach(function(b) { b.addEventListener('click', function() { if (confirm('Deletar produto?')) npSalvarLista(npGetLista().filter(function(p) { return p.id !== parseInt(b.dataset.id); })); }); });
 }
-
-function npToggle(id) { npSalvarLista(npGetLista().map(function(p) { return p.id === id ? Object.assign({}, p, { ativo: !p.ativo }) : p; })); }
-function npDel(id) { if (!confirm('Deletar produto?')) return; npSalvarLista(npGetLista().filter(function(p) { return p.id !== id; })); }
-async function tgEnviarProd(id) { var p = npGetLista().find(function(x) { return x.id === id; }); if (p) await tgEnviarParaDest(tgMontarOferta(p), tgManDest); }
-function wppEnviarProd(id) { var p = npGetLista().find(function(x) { return x.id === id; }); if (p) window.open('https://wa.me/?text=' + encodeURIComponent(tgMontarOferta(p).replace(/\*/g, '').replace(/~~/g, '')), '_blank'); }
 
 function tgSetIntervalo(min, el) {
   tgIntervalo = min; localStorage.setItem('tg_intervalo', min);
   document.getElementById('intervalo-val').textContent = min;
-  document.querySelectorAll('.ipill').forEach(function(p) { p.classList.remove('on'); });
-  if (el) el.classList.add('on');
-  // Reinicia com novo intervalo
-  if (tgAutoAtivo) {
-    tgLogApp('⏱️ Intervalo atualizado para ' + min + ' min. Reiniciando...', 'warn');
-    tgPararAuto().then(function() {
-      setTimeout(tgIniciarAuto, 500);
-    });
-  }
+  document.querySelectorAll('.ipill').forEach(function(p) { p.classList.remove('on'); }); if (el) el.classList.add('on');
+  if (tgAutoAtivo) { tgLogApp('⏱️ Intervalo atualizado para ' + min + ' min. Reiniciando...', 'warn'); tgPararAuto().then(function() { setTimeout(tgIniciarAuto, 500); }); }
 }
 
-function tgAutoSetDest(d) {
-  tgAutoDest = d; localStorage.setItem('tg_auto_dest', d);
-  ['ambos','canal','grupo'].forEach(function(x) { var el = document.getElementById('auto-pill-' + x); if (el) el.classList.toggle('on', x === d); });
-}
-function tgManSetDest(d) {
-  tgManDest = d;
-  ['ambos','canal','grupo'].forEach(function(x) { var el = document.getElementById('man-pill-' + x); if (el) el.classList.toggle('on', x === d); });
-}
-function tgManCDest(d) {
-  tgManCDt = d;
-  ['ambos','canal','grupo'].forEach(function(x) { var el = document.getElementById('man-c-' + x); if (el) el.classList.toggle('on', x === d); });
-}
+function tgAutoSetDest(d) { tgAutoDest = d; localStorage.setItem('tg_auto_dest', d); ['ambos', 'canal', 'grupo'].forEach(function(x) { var el = document.getElementById('auto-pill-' + x); if (el) el.classList.toggle('on', x === d); }); }
+function tgManSetDest(d) { tgManDest = d; ['ambos', 'canal', 'grupo'].forEach(function(x) { var el = document.getElementById('man-pill-' + x); if (el) el.classList.toggle('on', x === d); }); }
+function tgManCDest(d) { tgManCDt = d; ['ambos', 'canal', 'grupo'].forEach(function(x) { var el = document.getElementById('man-c-' + x); if (el) el.classList.toggle('on', x === d); }); }
 
 function autoRenderProds() {
   var c = document.getElementById('auto-prods-lista'); if (!c) return;
@@ -2228,19 +1565,10 @@ function autoRenderProds() {
   if (!lista.length) { c.innerHTML = '<p style="font-size:12px;color:#888;">Cadastre produtos na aba Produtos primeiro.</p>'; return; }
   var html = '';
   lista.forEach(function(p) {
-    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--borda);">';
-    html += '<span style="font-size:13px;font-weight:800;">' + p.emoji + ' ' + p.nome + '</span>';
-    html += '<span class="auto-toggle-badge" data-id="' + p.id + '" style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:' + (p.ativo ? '#e8f5e1' : '#f5f2ef') + ';color:' + (p.ativo ? '#1a6e35' : '#888') + ';cursor:pointer;">' + (p.ativo ? '✅ Ativo' : '⏸ Pausado') + '</span>';
-    html += '</div>';
+    html += '<div style="display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--borda);"><span style="font-size:13px;font-weight:800;">' + p.emoji + ' ' + p.nome + '</span><span class="auto-toggle-badge" data-id="' + p.id + '" style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:' + (p.ativo ? '#e8f5e1' : '#f5f2ef') + ';color:' + (p.ativo ? '#1a6e35' : '#888') + ';cursor:pointer;">' + (p.ativo ? '✅ Ativo' : '⏸ Pausado') + '</span></div>';
   });
   c.innerHTML = html;
-  c.querySelectorAll('.auto-toggle-badge').forEach(function(badge) {
-    badge.addEventListener('click', function() {
-      npToggle(parseInt(this.dataset.id));
-      // Atualiza SW com nova lista
-      if (tgAutoAtivo && window._swOk) tgSwCmd('TG_UPDATE_PRODUTOS', { produtos: npGetLista() });
-    });
-  });
+  c.querySelectorAll('.auto-toggle-badge').forEach(function(badge) { badge.addEventListener('click', function() { npSalvarLista(npGetLista().map(function(p) { return p.id === parseInt(badge.dataset.id) ? Object.assign({}, p, { ativo: !p.ativo }) : p; })); }); });
 }
 
 function manualRenderProds() {
@@ -2250,21 +1578,17 @@ function manualRenderProds() {
   var html = '';
   lista.forEach(function(p) {
     var sel = tgManProdSel === p.id;
-    html += '<div class="prod-card man-sel-card" data-id="' + p.id + '" style="cursor:pointer;' + (sel ? 'border-color:#0088cc;background:#f0f8ff' : '') + '">';
-    html += '<div class="prod-card-top"><div><div class="prod-card-nome">' + p.emoji + ' ' + p.nome + '</div><div class="prod-card-preco">' + p.preco + '</div></div>' + (sel ? '<span style="font-size:20px;">✅</span>' : '') + '</div></div>';
+    html += '<div class="prod-card man-sel-card" data-id="' + p.id + '" style="cursor:pointer;' + (sel ? 'border-color:#0088cc;background:#f0f8ff' : '') + '"><div class="prod-card-top"><div><div class="prod-card-nome">' + p.emoji + ' ' + p.nome + '</div><div class="prod-card-preco">' + p.preco + '</div></div>' + (sel ? '<span style="font-size:20px;">✅</span>' : '') + '</div></div>';
   });
   c.innerHTML = html;
-  c.querySelectorAll('.man-sel-card').forEach(function(card) {
-    card.addEventListener('click', function() { tgSelProd(parseInt(this.dataset.id)); });
-  });
+  c.querySelectorAll('.man-sel-card').forEach(function(card) { card.addEventListener('click', function() { tgManProdSel = parseInt(card.dataset.id); manualRenderProds(); }); });
 }
 
-function tgSelProd(id) { tgManProdSel = id; manualRenderProds(); }
 async function tgEnviarManual() { if (!tgManProdSel) { alert('Selecione um produto!'); return; } var p = npGetLista().find(function(x) { return x.id === tgManProdSel; }); if (p) await tgEnviarParaDest(tgMontarOferta(p), tgManDest); }
 async function tgEnviarCustom() { var msg = document.getElementById('man-msg-custom').value.trim(); if (!msg) { alert('Digite a mensagem!'); return; } await tgEnviarParaDest(msg, tgManCDt); }
 
 function tgTab(id) {
-  var tabs = ['config','produtos','auto','manual'];
+  var tabs = ['config', 'produtos', 'auto', 'manual'];
   tabs.forEach(function(t, i) {
     var tab = document.querySelectorAll('.tg-tab')[i]; if (tab) tab.classList.toggle('on', t === id);
     var panel = document.getElementById('tg-panel-' + t); if (panel) panel.classList.toggle('on', t === id);
@@ -2273,153 +1597,107 @@ function tgTab(id) {
   if (id === 'manual') manualRenderProds();
 }
 
-// ── Evento de visibilidade — detecta quando volta para o app ─
-document.addEventListener('visibilitychange', function() {
-  if (document.visibilityState === 'visible') {
-    // Checa se o SW ainda está rodando
-    if (tgAutoAtivo && window._swOk) {
-      swEnviarMensagem('TG_PING', {}).then(function(res) {
-        if (res && res.active) {
-          tgLogApp('📶 Voltou ao app — bot ainda ativo via SW ✅', 'ok');
-        } else if (tgAutoAtivo) {
-          tgLogApp('⚠️ SW parou. Reiniciando bot...', 'warn');
-          tgIniciarAuto();
-        }
-      }).catch(function() {
-        if (tgAutoAtivo) tgIniciarAuto();
-      });
-    }
-  }
-});
-
-// ============================================================
-// AGENDADOR
-// ============================================================
-function adicionarAgenda(){
-  var hora=document.getElementById('ag-hora').value;
-  var desc=document.getElementById('ag-nome').value.trim()||'Envio agendado';
-  var msg=document.getElementById('ag-msg').value.trim();
-  if(!hora){ alert('Defina o horario!'); return; }
-  var dias=[];
-  document.getElementById('ag-dias-row').querySelectorAll('.pill.on').forEach(function(p){ dias.push(p.dataset.dia); });
-  if(!dias.length){ alert('Selecione ao menos um dia!'); return; }
-  var id2=Date.now();
-  agenda.push({id:id2,hora:hora,dias:dias,desc:desc,msg:msg,status:'pendente'});
-  svpSet('svp_agenda',agenda);
-  document.getElementById('ag-nome').value='';
-  document.getElementById('ag-msg').value='';
-  renderAgenda();
-  alert('✅ Agendado para '+hora+'!');
+// Agenda
+function adicionarAgenda() {
+  var hora = document.getElementById('ag-hora').value, desc = document.getElementById('ag-nome').value.trim() || 'Envio agendado', msg = document.getElementById('ag-msg').value.trim();
+  if (!hora) { alert('Defina o horario!'); return; }
+  var dias = []; document.getElementById('ag-dias-row').querySelectorAll('.pill.on').forEach(function(p) { dias.push(p.dataset.dia); });
+  if (!dias.length) { alert('Selecione ao menos um dia!'); return; }
+  agenda.push({ id: Date.now(), hora: hora, dias: dias, desc: desc, msg: msg, status: 'pendente' });
+  svpSet('svp_agenda', agenda); document.getElementById('ag-nome').value = ''; document.getElementById('ag-msg').value = '';
+  renderAgenda(); alert('✅ Agendado para ' + hora + '!');
+}
+function renderAgenda() {
+  svpSet('svp_agenda', agenda); var el = document.getElementById('lista-agenda'); if (!el) return;
+  if (!agenda.length) { el.innerHTML = '<div class="empty-state"><div class="eicon">📅</div><p>Nenhum agendamento ainda.</p></div>'; return; }
+  var html = '';
+  agenda.forEach(function(a) {
+    html += '<div class="agenda-item"><div><div class="agenda-hora">' + a.hora + '</div><div class="agenda-desc">' + (a.desc || 'Agendamento') + '</div>';
+    if (a.msg) html += '<button class="ag-wpp-btn use-btn" data-id="' + a.id + '" style="margin-top:4px;font-size:11px;">💬 Enviar WPP</button>';
+    html += '</div><span class="' + (a.status === 'enviado' ? 'ag-enviado' : 'ag-pendente') + '">' + (a.status === 'enviado' ? 'Enviado' : 'Pendente') + '</span><button style="background:none;border:none;color:var(--r);font-size:16px;cursor:pointer;" class="ag-del-btn" data-id="' + a.id + '">🗑</button></div>';
+  });
+  el.innerHTML = html;
+  el.querySelectorAll('.ag-wpp-btn').forEach(function(btn) { btn.addEventListener('click', function() { var id = parseInt(btn.dataset.id); var ag = agenda.find(function(a) { return a.id === id; }); if (ag && ag.msg) window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(ag.msg), '_blank'); }); });
+  el.querySelectorAll('.ag-del-btn').forEach(function(btn) { btn.addEventListener('click', function() { agenda = agenda.filter(function(a) { return a.id !== parseInt(btn.dataset.id); }); renderAgenda(); }); });
+}
+function agVerificar() {
+  if (!agenda.length) return;
+  var agora = new Date(), horaAtual = String(agora.getHours()).padStart(2, '0') + ':' + String(agora.getMinutes()).padStart(2, '0');
+  var diaAtual = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'][agora.getDay()], mudou = false;
+  agenda.forEach(function(ag2, i) {
+    if (ag2.status === 'enviado' || ag2.hora !== horaAtual) return;
+    if (ag2.dias && !ag2.dias.includes(diaAtual)) return;
+    if (ag2.msg) window.open('https://api.whatsapp.com/send?text=' + encodeURIComponent(ag2.msg), '_blank');
+    agenda[i].status = 'enviado'; mudou = true;
+  });
+  if (mudou) { svpSet('svp_agenda', agenda); renderAgenda(); }
 }
 
-function renderAgenda(){
-  svpSet('svp_agenda',agenda);
-  var el=document.getElementById('lista-agenda'); if(!el) return;
-  if(!agenda.length){ el.innerHTML='<div class="empty-state"><div class="eicon">📅</div><p>Nenhum agendamento ainda.</p></div>'; return; }
-  var html='';
-  agenda.forEach(function(a){
-    html+='<div class="agenda-item"><div><div class="agenda-hora">'+a.hora+'</div><div class="agenda-desc">'+(a.desc||'Agendamento')+'</div>';
-    if(a.msg) html+='<button class="ag-wpp-btn use-btn" data-id="'+a.id+'" style="margin-top:4px;font-size:11px;">💬 Enviar WPP</button>';
-    html+='</div><span class="'+(a.status==='enviado'?'ag-enviado':'ag-pendente')+'">'+(a.status==='enviado'?'Enviado':'Pendente')+'</span>';
-    html+='<button class="ag-del ag-del-btn" data-id="'+a.id+'">🗑</button></div>';
-  });
-  el.innerHTML=html;
-  el.querySelectorAll('.ag-wpp-btn').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var id=parseInt(this.dataset.id);
-      var ag=agenda.find(function(a){ return a.id===id; });
-      if(ag&&ag.msg) window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(ag.msg),'_blank');
-    });
-  });
-  el.querySelectorAll('.ag-del-btn').forEach(function(btn){
-    btn.addEventListener('click',function(){
-      var id=parseInt(this.dataset.id);
-      agenda=agenda.filter(function(a){ return a.id!==id; });
-      renderAgenda();
-    });
-  });
-}
-
-function agVerificar(){
-  if(!agenda.length) return;
-  var agora=new Date();
-  var horaAtual=String(agora.getHours()).padStart(2,'0')+':'+String(agora.getMinutes()).padStart(2,'0');
-  var diaAtual=['Dom','Seg','Ter','Qua','Qui','Sex','Sab'][agora.getDay()];
-  var mudou=false;
-  agenda.forEach(function(ag2,i){
-    if(ag2.status==='enviado') return;
-    if(ag2.hora!==horaAtual) return;
-    if(ag2.dias&&!ag2.dias.includes(diaAtual)) return;
-    if(ag2.msg) window.open('https://api.whatsapp.com/send?text='+encodeURIComponent(ag2.msg),'_blank');
-    agenda[i].status='enviado'; mudou=true;
-  });
-  if(mudou){ svpSet('svp_agenda',agenda); renderAgenda(); }
-}
-
-// ============================================================
-// INICIALIZAR
-// ============================================================
+// ===== INIT =====
 carregarCfg();
 
-document.addEventListener('DOMContentLoaded', function(){
+(function init() {
   // Login
-  document.getElementById('btn-entrar').onclick=fazerLogin;
-  document.getElementById('inp-senha').onkeydown=function(e){ if(e.key==='Enter') fazerLogin(); };
-  document.getElementById('btn-comprar').onclick=function(){ window.open('https://pay.kiwify.com.br/xQkKAm4','_blank'); };
-  document.getElementById('btn-ir-admin').onclick=irParaAdmin;
+  document.getElementById('btn-entrar').addEventListener('click', fazerLogin);
+  document.getElementById('inp-senha').addEventListener('keydown', function(e) { if (e.key === 'Enter') fazerLogin(); });
+  document.getElementById('btn-ir-admin').addEventListener('click', irParaAdmin);
+  document.getElementById('btn-login-admin').addEventListener('click', loginAdmin);
+  document.getElementById('inp-admin').addEventListener('keydown', function(e) { if (e.key === 'Enter') loginAdmin(); });
+  document.getElementById('btn-voltar-login').addEventListener('click', voltarLogin);
+  document.getElementById('btn-sair-admin').addEventListener('click', sairAdmin);
+  document.getElementById('btn-logout').addEventListener('click', fazerLogout);
 
-  // Admin login
-  document.getElementById('btn-login-admin').onclick=loginAdmin;
-  document.getElementById('inp-admin').onkeydown=function(e){ if(e.key==='Enter') loginAdmin(); };
-  document.getElementById('btn-voltar-login').onclick=voltarLogin;
-  document.getElementById('btn-sair-admin').onclick=sairAdmin;
-  document.getElementById('btn-adm-criar').onclick=function(){ adminTab('criar'); };
-  document.getElementById('btn-adm-clientes').onclick=function(){ adminTab('clientes'); };
-  document.getElementById('btn-criar-licenca').onclick=criarLicenca;
-  document.getElementById('btn-enviar-senha-wpp').onclick=enviarSenhaWpp;
-  document.getElementById('btn-copiar-senha').onclick=copiarSenhaCriada;
+  // Admin
+  document.getElementById('admin-nav').querySelectorAll('.admin-tab').forEach(function(tab) {
+    tab.addEventListener('click', function() { adminTab(this.dataset.tab); });
+  });
+  document.getElementById('btn-adm-criar').addEventListener('click', function() { adminTab('criar'); });
+  document.getElementById('btn-adm-clientes').addEventListener('click', function() { adminTab('clientes'); });
+  document.getElementById('btn-criar-licenca').addEventListener('click', criarLicenca);
+  document.getElementById('btn-enviar-senha-wpp').addEventListener('click', enviarSenhaWpp);
+  document.getElementById('btn-copiar-senha').addEventListener('click', copiarSenhaCriada);
+  document.getElementById('btn-salvar-cfg').addEventListener('click', salvarCfgAdmin);
+  document.getElementById('adm-busca').addEventListener('input', filtrarClientes);
 
-  document.querySelectorAll('.admin-tab').forEach(function(tab){
-    tab.addEventListener('click',function(){ adminTab(this.dataset.tab); });
+  // Validade pills
+  document.getElementById('val-pills').querySelectorAll('.pill').forEach(function(p) {
+    p.addEventListener('click', function() {
+      document.getElementById('val-pills').querySelectorAll('.pill').forEach(function(x) { x.classList.remove('on'); });
+      this.classList.add('on');
+      document.getElementById('adm-validade').value = this.dataset.val;
+    });
   });
 
-  // App
-  document.getElementById('btn-logout').onclick=fazerLogout;
-  document.getElementById('btn-chat-send').onclick=enviarChat;
-  document.getElementById('chat-inp').onkeydown=function(e){ if(e.key==='Enter') enviarChat(); };
-  document.getElementById('btn-baixar-kit').onclick=function(){ baixar('kit_lancamento.txt',window._kitTexto||''); };
-  document.getElementById('btn-baixar-roteiro').onclick=function(){ baixar('roteiro.txt',window._roteiro||''); };
+  // App buttons
+  document.getElementById('btn-chat-send').addEventListener('click', enviarChat);
+  document.getElementById('chat-inp').addEventListener('keydown', function(e) { if (e.key === 'Enter') enviarChat(); });
+  document.getElementById('btn-kit').addEventListener('click', gerarKitCompleto);
+  document.getElementById('btn-baixar-kit').addEventListener('click', function() { baixar('kit_lancamento.txt', window._kitTexto || ''); });
+  document.getElementById('btn-baixar-roteiro').addEventListener('click', function() { baixar('roteiro.txt', window._roteiro || ''); });
+  document.getElementById('btn-shopee-dl').addEventListener('click', abrirShopeeDownloader);
 
-  // Init
-  updStats(); renderVitrine(); renderAgenda(); renderHistoricoAfl(); npRender(); renderTpls();
-  verificarSessao();
+  // Agenda dias toggle
+  document.getElementById('ag-dias-row').querySelectorAll('.pill').forEach(function(p) {
+    p.addEventListener('click', function() { this.classList.toggle('on'); });
+  });
 
-  // Telegram config
-  var tData={
-    token:localStorage.getItem('tg_token'),
-    canal:localStorage.getItem('tg_canal'),
-    grupo:localStorage.getItem('tg_grupo'),
-    or:localStorage.getItem('openrouter_key')
-  };
-  if(tData.token) document.getElementById('tg-inp-token').value=tData.token;
-  if(tData.canal) document.getElementById('tg-inp-canal').value=tData.canal;
-  if(tData.grupo) document.getElementById('tg-inp-grupo').value=tData.grupo;
-  if(tData.or) document.getElementById('tg-inp-or').value=tData.or;
-  if(tData.token) tgTestar(tData.token);
-  document.getElementById('intervalo-val').textContent=tgIntervalo;
-
-  // Restaura destino salvo
+  // Telegram
+  var tData = { token: localStorage.getItem('tg_token'), canal: localStorage.getItem('tg_canal'), grupo: localStorage.getItem('tg_grupo'), or: localStorage.getItem('openrouter_key') };
+  if (tData.token) document.getElementById('tg-inp-token').value = tData.token;
+  if (tData.canal) document.getElementById('tg-inp-canal').value = tData.canal;
+  if (tData.grupo) document.getElementById('tg-inp-grupo').value = tData.grupo;
+  if (tData.or) document.getElementById('tg-inp-or').value = tData.or;
+  if (tData.token) tgTestar(tData.token);
+  document.getElementById('intervalo-val').textContent = tgIntervalo;
   tgAutoSetDest(tgAutoDest);
 
-  // Restaura bot se estava ativo antes
-  setTimeout(tgRestaurarEstado, 1500);
-
-  setInterval(agVerificar,30000);
-  agVerificar();
-
-  // Badge SW atualiza após SW registrar
-  setTimeout(atualizarBadgeSW, 2000);
-});
+  // Renders
+  updStats(); renderVitrine(); renderAgenda(); renderHistoricoAfl(); npRender(); renderTpls();
+  verificarSessao();
+  setInterval(agVerificar, 30000); agVerificar();
+  setTimeout(atualizarBadgeSW, 1000);
+  window._swOk = false; // sem SW nesta versão para evitar erros
+})();
 </script>
 </body>
 </html>
