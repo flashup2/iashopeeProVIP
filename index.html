@@ -200,6 +200,12 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 .sw-badge.ok{background:#e8f5e1;color:#1a6e35;}
 .sw-badge.warn{background:#fef8e1;color:#7a5800;}
 .sw-badge.err{background:#fff0eb;color:#b03000;}
+/* Download box especial */
+.dl-option-card{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:#fff0eb;border:1.5px solid var(--borda);border-radius:14px;text-decoration:none;color:var(--dk);margin-bottom:8px;transition:border-color .2s;}
+.dl-option-card:hover{border-color:var(--r);}
+.dl-option-name{font-size:13px;font-weight:800;}
+.dl-option-desc{font-size:11px;color:#888;margin-top:1px;}
+.dl-tag{font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--r);color:white;}
 </style>
 </head>
 <body>
@@ -373,36 +379,59 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
       </div>
     </div>
 
+    <!-- ===== DOWNLOAD SHOPEE — CORRIGIDO ===== -->
     <div id="s-shopeedl" class="sec">
       <div class="card">
         <div class="card-hd">📥 Download Vídeo Shopee</div>
-        <div style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6;">Cole o link do produto ou vídeo da Shopee para baixar <strong>sem marca d'água</strong>.</div>
+        <div style="font-size:12px;color:#888;margin-bottom:14px;line-height:1.6;">Cole o link do produto ou vídeo da Shopee. O link será copiado automaticamente — é só colar no site que abrir.</div>
         <lbl>Link do produto ou vídeo</lbl>
         <input type="text" id="shopee-dl-url" placeholder="https://shopee.com.br/... ou https://s.shopee.com.br/..."/>
-        <div style="background:#fff0eb;border-radius:10px;padding:10px 12px;font-size:12px;color:#712B13;line-height:1.6;margin:10px 0;">
+
+        <div style="background:#fff0eb;border-radius:10px;padding:12px;font-size:12px;color:#712B13;line-height:1.7;margin:12px 0;">
           <strong>📋 Como usar:</strong><br>
-          1. Abra o produto na Shopee<br>
-          2. Toque em Compartilhar → Copiar link<br>
-          3. Cole aqui e clique em Baixar
+          1. Cole o link da Shopee acima<br>
+          2. Clique no downloader que preferir<br>
+          3. O link é copiado automaticamente<br>
+          4. Cole (Ctrl+V ou segurar+colar) no site que abrir
         </div>
-        <button class="btn btn-r" id="btn-shopee-dl">⬇️ Baixar Vídeo Sem Marca D'água</button>
-        <button class="btn btn-gray" style="margin-top:8px;" onclick="window.open('https://svxtract.com','_blank')">🌐 Abrir SVXtract diretamente</button>
+
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+          <button class="btn btn-r" style="margin:0;" onclick="abrirDownloader('snaptik')">⬇️ SnapTik</button>
+          <button class="btn btn-dk" style="margin:0;" onclick="abrirDownloader('savefrom')">⬇️ SaveFrom</button>
+          <button class="btn" style="margin:0;background:#ff6b00;color:white;" onclick="abrirDownloader('ssstik')">⬇️ SSSTik</button>
+          <button class="btn" style="margin:0;background:#5a2d8a;color:white;" onclick="abrirDownloader('svxtract')">⬇️ SVXtract</button>
+        </div>
+
+        <button class="btn btn-gray" style="margin-top:4px;" onclick="apenasCopiouLink()">📋 Só copiar o link</button>
       </div>
+
       <div class="card">
-        <div class="card-hd">⬇️ Outros downloaders</div>
-        <div style="display:flex;flex-direction:column;gap:8px;">
-          <a href="https://svxtract.com" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fff0eb;border:1.5px solid var(--borda);border-radius:12px;text-decoration:none;color:var(--dk);">
-            <div><div style="font-size:13px;font-weight:800;">SVXtract</div><div style="font-size:11px;color:#888;">Melhor — gratuito, sem login</div></div><span>→</span>
-          </a>
-          <a href="https://shopeenowatermark.com" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fff0eb;border:1.5px solid var(--borda);border-radius:12px;text-decoration:none;color:var(--dk);">
-            <div><div style="font-size:13px;font-weight:800;">ShopeeNoWatermark</div><div style="font-size:11px;color:#888;">HD, sem login</div></div><span>→</span>
-          </a>
-          <a href="https://www.downloadshopeevideo.com/en" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:space-between;padding:12px 14px;background:#fff0eb;border:1.5px solid var(--borda);border-radius:12px;text-decoration:none;color:var(--dk);">
-            <div><div style="font-size:13px;font-weight:800;">DownloadShopeeVideo</div><div style="font-size:11px;color:#888;">Alternativa</div></div><span>→</span>
-          </a>
-        </div>
+        <div class="card-hd">🌐 Abrir downloaders direto</div>
+        <div style="font-size:12px;color:#888;margin-bottom:12px;">Clique para abrir o site. Cole o link da Shopee lá dentro.</div>
+
+        <a href="https://snaptik.app/pt" target="_blank" rel="noopener" class="dl-option-card">
+          <div><div class="dl-option-name">SnapTik</div><div class="dl-option-desc">✅ Melhor para vídeos Shopee — sem marca d'água</div></div>
+          <span class="dl-tag">Recomendado</span>
+        </a>
+        <a href="https://ssstik.io/pt" target="_blank" rel="noopener" class="dl-option-card">
+          <div><div class="dl-option-name">SSSTik</div><div class="dl-option-desc">Rápido, sem login, HD</div></div>
+          <span style="font-size:12px;">→</span>
+        </a>
+        <a href="https://en.savefrom.net" target="_blank" rel="noopener" class="dl-option-card">
+          <div><div class="dl-option-name">SaveFrom.net</div><div class="dl-option-desc">Alternativa confiável</div></div>
+          <span style="font-size:12px;">→</span>
+        </a>
+        <a href="https://tikmate.online" target="_blank" rel="noopener" class="dl-option-card">
+          <div><div class="dl-option-name">TikMate</div><div class="dl-option-desc">Sem marca d'água</div></div>
+          <span style="font-size:12px;">→</span>
+        </a>
+        <a href="https://svxtract.com" target="_blank" rel="noopener" class="dl-option-card">
+          <div><div class="dl-option-name">SVXtract</div><div class="dl-option-desc">Específico para Shopee</div></div>
+          <span style="font-size:12px;">→</span>
+        </a>
       </div>
     </div>
+    <!-- ===== FIM DOWNLOAD ===== -->
 
     <div id="s-kit" class="sec">
       <div class="card">
@@ -1114,16 +1143,79 @@ function selTplCat(el, cat) { document.getElementById('tpl-tabs').querySelectorA
 function filtrar(el, cat) { document.getElementById('filtros').querySelectorAll('.filter-pill').forEach(function(p) { p.classList.remove('on'); }); el.classList.add('on'); filtroAtual = cat; renderVitrine(); }
 function updStats() { cnts.prod = prods.length; ['prod', 'afl', 'copy', 'wpp'].forEach(function(k) { var e = document.getElementById('cnt-' + k); if (e) e.textContent = cnts[k]; }); svpSet('svp_cnts', cnts); svpSet('svp_prods', prods); }
 
-// Download Shopee
-function abrirShopeeDownloader() {
-  var url = (document.getElementById('shopee-dl-url').value || '').trim();
-  if (!url) { alert('Cole o link da Shopee primeiro!'); return; }
-  window.open('https://svxtract.com/?url=' + encodeURIComponent(url), '_blank');
+// ===== DOWNLOAD SHOPEE — FUNÇÃO CORRIGIDA =====
+var _urlCopiada = false;
+
+function copiarUrlParaClipboard(url) {
+  return new Promise(function(resolve) {
+    if (!url) { resolve(false); return; }
+    try {
+      navigator.clipboard.writeText(url).then(function() {
+        _urlCopiada = true;
+        resolve(true);
+      }).catch(function() {
+        // fallback: textarea
+        try {
+          var ta = document.createElement('textarea');
+          ta.value = url;
+          ta.style.position = 'fixed';
+          ta.style.opacity = '0';
+          document.body.appendChild(ta);
+          ta.focus();
+          ta.select();
+          document.execCommand('copy');
+          document.body.removeChild(ta);
+          _urlCopiada = true;
+          resolve(true);
+        } catch(e) { resolve(false); }
+      });
+    } catch(e) { resolve(false); }
+  });
 }
 
-// Afiliado
+// Mapa de downloaders que aceitam parâmetro de URL direto
+var downloaderUrls = {
+  snaptik:   function(url) { return 'https://snaptik.app/pt'; },
+  savefrom:  function(url) { return 'https://en.savefrom.net/#url=' + encodeURIComponent(url); },
+  ssstik:    function(url) { return 'https://ssstik.io/pt#url=' + encodeURIComponent(url); },
+  svxtract:  function(url) { return 'https://svxtract.com'; },
+  tikmate:   function(url) { return 'https://tikmate.online'; }
+};
+
+function abrirDownloader(nome) {
+  var url = (document.getElementById('shopee-dl-url').value || '').trim();
+  if (!url) {
+    alert('⚠️ Cole o link da Shopee primeiro!');
+    document.getElementById('shopee-dl-url').focus();
+    return;
+  }
+  var gerarUrl = downloaderUrls[nome];
+  var destino = gerarUrl ? gerarUrl(url) : 'https://snaptik.app/pt';
+
+  copiarUrlParaClipboard(url).then(function(copiou) {
+    if (copiou) {
+      alert('✅ Link copiado! O site vai abrir agora.\n\nCole o link (Ctrl+V ou segurar+Colar) no campo do site.');
+    } else {
+      alert('⚠️ Não foi possível copiar automaticamente.\n\nCopie o link manualmente:\n' + url);
+    }
+    window.open(destino, '_blank');
+  });
+}
+
+function apenasCopiouLink() {
+  var url = (document.getElementById('shopee-dl-url').value || '').trim();
+  if (!url) { alert('Cole o link da Shopee primeiro!'); return; }
+  copiarUrlParaClipboard(url).then(function(ok) {
+    alert(ok ? '✅ Link copiado para a área de transferência!' : 'Não foi possível copiar. Selecione e copie manualmente.');
+  });
+}
+// ===== FIM DOWNLOAD =====
+
+// Busca
 function buscarOfertas() { var t = document.getElementById('busca-termo').value.trim(); if (!t) { alert('Digite o que buscar!'); return; } window.open('https://www.google.com/search?q=' + encodeURIComponent(t + ' ' + document.getElementById('busca-filtro').value + ' site:shopee.com.br'), '_blank'); }
 function buscaRapida(q) { window.open('https://www.google.com/search?q=' + encodeURIComponent(q + ' site:shopee.com.br'), '_blank'); }
+
+// Afiliado
 function gerarLinkAfiliado() {
   var link = document.getElementById('afl-link-input').value.trim();
   var nome = document.getElementById('afl-nome').value.trim() || 'Produto';
@@ -1637,7 +1729,6 @@ function agVerificar() {
 carregarCfg();
 
 (function init() {
-  // Login
   document.getElementById('btn-entrar').addEventListener('click', fazerLogin);
   document.getElementById('inp-senha').addEventListener('keydown', function(e) { if (e.key === 'Enter') fazerLogin(); });
   document.getElementById('btn-ir-admin').addEventListener('click', irParaAdmin);
@@ -1647,7 +1738,6 @@ carregarCfg();
   document.getElementById('btn-sair-admin').addEventListener('click', sairAdmin);
   document.getElementById('btn-logout').addEventListener('click', fazerLogout);
 
-  // Admin
   document.getElementById('admin-nav').querySelectorAll('.admin-tab').forEach(function(tab) {
     tab.addEventListener('click', function() { adminTab(this.dataset.tab); });
   });
@@ -1659,7 +1749,6 @@ carregarCfg();
   document.getElementById('btn-salvar-cfg').addEventListener('click', salvarCfgAdmin);
   document.getElementById('adm-busca').addEventListener('input', filtrarClientes);
 
-  // Validade pills
   document.getElementById('val-pills').querySelectorAll('.pill').forEach(function(p) {
     p.addEventListener('click', function() {
       document.getElementById('val-pills').querySelectorAll('.pill').forEach(function(x) { x.classList.remove('on'); });
@@ -1668,20 +1757,16 @@ carregarCfg();
     });
   });
 
-  // App buttons
   document.getElementById('btn-chat-send').addEventListener('click', enviarChat);
   document.getElementById('chat-inp').addEventListener('keydown', function(e) { if (e.key === 'Enter') enviarChat(); });
   document.getElementById('btn-kit').addEventListener('click', gerarKitCompleto);
   document.getElementById('btn-baixar-kit').addEventListener('click', function() { baixar('kit_lancamento.txt', window._kitTexto || ''); });
   document.getElementById('btn-baixar-roteiro').addEventListener('click', function() { baixar('roteiro.txt', window._roteiro || ''); });
-  document.getElementById('btn-shopee-dl').addEventListener('click', abrirShopeeDownloader);
 
-  // Agenda dias toggle
   document.getElementById('ag-dias-row').querySelectorAll('.pill').forEach(function(p) {
     p.addEventListener('click', function() { this.classList.toggle('on'); });
   });
 
-  // Telegram
   var tData = { token: localStorage.getItem('tg_token'), canal: localStorage.getItem('tg_canal'), grupo: localStorage.getItem('tg_grupo'), or: localStorage.getItem('openrouter_key') };
   if (tData.token) document.getElementById('tg-inp-token').value = tData.token;
   if (tData.canal) document.getElementById('tg-inp-canal').value = tData.canal;
@@ -1691,12 +1776,11 @@ carregarCfg();
   document.getElementById('intervalo-val').textContent = tgIntervalo;
   tgAutoSetDest(tgAutoDest);
 
-  // Renders
   updStats(); renderVitrine(); renderAgenda(); renderHistoricoAfl(); npRender(); renderTpls();
   verificarSessao();
   setInterval(agVerificar, 30000); agVerificar();
   setTimeout(atualizarBadgeSW, 1000);
-  window._swOk = false; // sem SW nesta versão para evitar erros
+  window._swOk = false;
 })();
 </script>
 </body>
