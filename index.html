@@ -201,15 +201,12 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 .sw-badge.ok{background:#e8f5e1;color:#1a6e35;}
 .sw-badge.warn{background:#fef8e1;color:#7a5800;}
 .sw-badge.err{background:#fff0eb;color:#b03000;}
-/* Download box */
 .dl-option-card{display:flex;align-items:center;justify-content:space-between;padding:13px 15px;background:#fff0eb;border:1.5px solid var(--borda);border-radius:14px;text-decoration:none;color:var(--dk);margin-bottom:8px;transition:border-color .2s;}
 .dl-option-card:hover{border-color:var(--r);}
 .dl-option-name{font-size:13px;font-weight:800;}
 .dl-option-desc{font-size:11px;color:#888;margin-top:1px;}
 .dl-tag{font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--r);color:white;}
-/* SVDown destaque */
 .dl-option-card.svdown-card{background:linear-gradient(135deg,#fff8f6,#fff0eb);border:2px solid var(--r);}
-/* Instagram download */
 .ig-card{background:#fff;border:2px solid #f09433;border-radius:18px;padding:16px;margin-bottom:14px;}
 .ig-card-hd{font-size:14px;font-weight:900;background:linear-gradient(90deg,#833ab4,#fd1d1d,#fcb045);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;}
 .ig-option{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;border:1.5px solid #e0d0f0;border-radius:14px;text-decoration:none;color:var(--dk);margin-bottom:8px;background:#fdf5ff;transition:border-color .2s;}
@@ -217,7 +214,6 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 .ig-option-name{font-size:13px;font-weight:800;}
 .ig-option-desc{font-size:11px;color:#888;margin-top:1px;}
 .ig-btn{display:flex;align-items:center;justify-content:center;gap:7px;width:100%;border:none;border-radius:12px;padding:12px 18px;font-size:13px;font-weight:800;cursor:pointer;margin-top:8px;font-family:'Nunito',sans-serif;background:linear-gradient(135deg,#833ab4,#fd1d1d,#fcb045);color:white;}
-/* SW status */
 .sw-status-box{border-radius:12px;padding:12px;margin-bottom:12px;font-size:12px;line-height:1.7;}
 .sw-ok{background:#e8f5e1;border:1.5px solid #9fe1cb;color:#1a6e35;}
 .sw-warn{background:#fef8e1;border:1.5px solid #f5d77a;color:#7a5800;}
@@ -473,7 +469,7 @@ function tgLogAppSW(msg,ok){
       </div>
     </div>
 
-    <!-- ===== DOWNLOAD SHOPEE — COM SVDown ADICIONADO ===== -->
+    <!-- ===== DOWNLOAD SHOPEE — APENAS copiarlink.com.br ===== -->
     <div id="s-shopeedl" class="sec">
       <div class="card">
         <div class="card-hd">📥 Download Vídeo Shopee</div>
@@ -483,54 +479,23 @@ function tgLogAppSW(msg,ok){
         <div style="background:#fff0eb;border-radius:10px;padding:12px;font-size:12px;color:#712B13;line-height:1.7;margin:12px 0;">
           <strong>📋 Como usar:</strong><br>
           1. Cole o link da Shopee acima<br>
-          2. Clique no downloader preferido<br>
+          2. Clique no botão abaixo<br>
           3. O link é copiado automaticamente<br>
           4. Cole (Ctrl+V ou segurar+Colar) no site que abrir
         </div>
-        <!-- Grade de botões — SVDown adicionado como primeira opção (destaque) -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
-          <button class="btn btn-r" style="margin:0;background:#EE4D2D;font-size:12px;" onclick="abrirDownloader('svdown')">⭐ SVDown</button>
-          <button class="btn btn-r" style="margin:0;" onclick="abrirDownloader('snaptik')">⬇️ SnapTik</button>
-          <button class="btn btn-dk" style="margin:0;" onclick="abrirDownloader('savefrom')">⬇️ SaveFrom</button>
-          <button class="btn" style="margin:0;background:#ff6b00;color:white;" onclick="abrirDownloader('ssstik')">⬇️ SSSTik</button>
-          <button class="btn" style="margin:0;background:#5a2d8a;color:white;" onclick="abrirDownloader('tikmate')">⬇️ TikMate</button>
-          <button class="btn btn-gray" style="margin:0;" onclick="abrirDownloader('downloadtiktok')">⬇️ DLTikTok</button>
-        </div>
-        <button class="btn btn-gray" style="margin-top:4px;" onclick="apenasCopiouLink('shopee-dl-url')">📋 Só copiar o link</button>
+        <button class="btn btn-r" style="font-size:14px;padding:14px;" onclick="abrirCopiarLink()">📥 Baixar Vídeo Shopee</button>
+        <button class="btn btn-gray" style="margin-top:8px;" onclick="apenasCopiouLink('shopee-dl-url')">📋 Só copiar o link</button>
       </div>
 
       <div class="card">
-        <div class="card-hd">🌐 Abrir downloaders direto</div>
+        <div class="card-hd">🌐 Abrir downloader</div>
         <div style="font-size:12px;color:#888;margin-bottom:12px;">Clique para abrir o site. Cole o link da Shopee lá dentro.</div>
-
-        <!-- SVDown como primeira opção — destaque especial -->
-        <a href="https://svdown.com" target="_blank" rel="noopener" class="dl-option-card svdown-card">
+        <a href="https://copiarlink.com.br" target="_blank" rel="noopener" class="dl-option-card svdown-card">
           <div>
-            <div class="dl-option-name">⭐ SVDown</div>
-            <div class="dl-option-desc">✅ Especialista em Shopee — sem marca d'água, sem cadastro</div>
+            <div class="dl-option-name">⬇️ CopiarLink.com.br</div>
+            <div class="dl-option-desc">✅ Download de vídeos Shopee — sem marca d'água, sem cadastro</div>
           </div>
           <span class="dl-tag">Recomendado</span>
-        </a>
-
-        <a href="https://snaptik.app/pt" target="_blank" rel="noopener" class="dl-option-card">
-          <div><div class="dl-option-name">SnapTik</div><div class="dl-option-desc">Ótimo para vídeos Shopee — sem marca d'água</div></div>
-          <span style="font-size:12px;">→</span>
-        </a>
-        <a href="https://ssstik.io/pt" target="_blank" rel="noopener" class="dl-option-card">
-          <div><div class="dl-option-name">SSSTik</div><div class="dl-option-desc">Rápido, sem login, HD</div></div>
-          <span style="font-size:12px;">→</span>
-        </a>
-        <a href="https://en.savefrom.net" target="_blank" rel="noopener" class="dl-option-card">
-          <div><div class="dl-option-name">SaveFrom.net</div><div class="dl-option-desc">Alternativa confiável</div></div>
-          <span style="font-size:12px;">→</span>
-        </a>
-        <a href="https://tikmate.online" target="_blank" rel="noopener" class="dl-option-card">
-          <div><div class="dl-option-name">TikMate</div><div class="dl-option-desc">Sem marca d'água</div></div>
-          <span style="font-size:12px;">→</span>
-        </a>
-        <a href="https://www.downloadtiktok.app/pt" target="_blank" rel="noopener" class="dl-option-card">
-          <div><div class="dl-option-name">DownloadTikTok</div><div class="dl-option-desc">Funciona com links Shopee curtos</div></div>
-          <span style="font-size:12px;">→</span>
         </a>
       </div>
     </div>
@@ -1311,7 +1276,7 @@ function selTplCat(el, cat) { document.getElementById('tpl-tabs').querySelectorA
 function filtrar(el, cat) { document.getElementById('filtros').querySelectorAll('.filter-pill').forEach(function(p) { p.classList.remove('on'); }); el.classList.add('on'); filtroAtual = cat; renderVitrine(); }
 function updStats() { cnts.prod = prods.length; ['prod', 'afl', 'copy', 'wpp'].forEach(function(k) { var e = document.getElementById('cnt-' + k); if (e) e.textContent = cnts[k]; }); svpSet('svp_cnts', cnts); svpSet('svp_prods', prods); }
 
-// ===== DOWNLOAD — Downloaders com SVDown adicionado =====
+// ===== DOWNLOAD SHOPEE — apenas copiarlink.com.br =====
 function copiarParaClipboard(texto) {
   return new Promise(function(resolve) {
     if (!texto) { resolve(false); return; }
@@ -1333,34 +1298,24 @@ function copiarParaClipboard(texto) {
   });
 }
 
-// ===== SVDown ADICIONADO como primeira opção =====
-var downloaderUrlsShopee = {
-  svdown:         function(url) { return 'https://svdown.com'; },
-  snaptik:        function(url) { return 'https://snaptik.app/pt'; },
-  savefrom:       function(url) { return 'https://en.savefrom.net/#url=' + encodeURIComponent(url); },
-  ssstik:         function(url) { return 'https://ssstik.io/pt#url=' + encodeURIComponent(url); },
-  tikmate:        function(url) { return 'https://tikmate.online'; },
-  downloadtiktok: function(url) { return 'https://www.downloadtiktok.app/pt'; }
-};
+// Abre copiarlink.com.br copiando o link da Shopee primeiro
+function abrirCopiarLink() {
+  var url = (document.getElementById('shopee-dl-url').value || '').trim();
+  if (!url) { alert('⚠️ Cole o link da Shopee primeiro!'); document.getElementById('shopee-dl-url').focus(); return; }
+  copiarParaClipboard(url).then(function(ok) {
+    if (ok) alert('✅ Link copiado!\n\nCole no campo do site que vai abrir (Ctrl+V ou segurar+Colar).');
+    else alert('⚠️ Não copiou automático.\nCopie o link manualmente:\n' + url);
+    window.open('https://copiarlink.com.br', '_blank');
+  });
+}
 
+// Downloaders Instagram
 var downloaderUrlsIG = {
   snapinsta:    function(url) { return 'https://snapinsta.app/pt'; },
   igdownloader: function(url) { return 'https://igdownloader.app/pt'; },
   instafinsta:  function(url) { return 'https://instafinsta.com'; },
   saveinsta:    function(url) { return 'https://save-insta.app/pt'; }
 };
-
-function abrirDownloader(nome) {
-  var url = (document.getElementById('shopee-dl-url').value || '').trim();
-  if (!url) { alert('⚠️ Cole o link da Shopee primeiro!'); document.getElementById('shopee-dl-url').focus(); return; }
-  var fn = downloaderUrlsShopee[nome];
-  var destino = fn ? fn(url) : 'https://svdown.com';
-  copiarParaClipboard(url).then(function(ok) {
-    if (ok) alert('✅ Link copiado!\n\nCole no campo do site que vai abrir (Ctrl+V ou segurar+Colar).');
-    else alert('⚠️ Não copiou automático.\nCopie o link manualmente:\n' + url);
-    window.open(destino, '_blank');
-  });
-}
 
 function abrirDownloaderIG(nome) {
   var url = (document.getElementById('ig-dl-url').value || '').trim();
