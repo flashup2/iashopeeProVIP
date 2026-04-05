@@ -207,6 +207,8 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 .dl-option-name{font-size:13px;font-weight:800;}
 .dl-option-desc{font-size:11px;color:#888;margin-top:1px;}
 .dl-tag{font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:var(--r);color:white;}
+/* SVDown destaque */
+.dl-option-card.svdown-card{background:linear-gradient(135deg,#fff8f6,#fff0eb);border:2px solid var(--r);}
 /* Instagram download */
 .ig-card{background:#fff;border:2px solid #f09433;border-radius:18px;padding:16px;margin-bottom:14px;}
 .ig-card-hd{font-size:14px;font-weight:900;background:linear-gradient(90deg,#833ab4,#fd1d1d,#fcb045);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:12px;}
@@ -471,7 +473,7 @@ function tgLogAppSW(msg,ok){
       </div>
     </div>
 
-    <!-- ===== DOWNLOAD SHOPEE — CORRIGIDO (sem SVXtract) ===== -->
+    <!-- ===== DOWNLOAD SHOPEE — COM SVDown ADICIONADO ===== -->
     <div id="s-shopeedl" class="sec">
       <div class="card">
         <div class="card-hd">📥 Download Vídeo Shopee</div>
@@ -485,20 +487,34 @@ function tgLogAppSW(msg,ok){
           3. O link é copiado automaticamente<br>
           4. Cole (Ctrl+V ou segurar+Colar) no site que abrir
         </div>
+        <!-- Grade de botões — SVDown adicionado como primeira opção (destaque) -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+          <button class="btn btn-r" style="margin:0;background:#EE4D2D;font-size:12px;" onclick="abrirDownloader('svdown')">⭐ SVDown</button>
           <button class="btn btn-r" style="margin:0;" onclick="abrirDownloader('snaptik')">⬇️ SnapTik</button>
           <button class="btn btn-dk" style="margin:0;" onclick="abrirDownloader('savefrom')">⬇️ SaveFrom</button>
           <button class="btn" style="margin:0;background:#ff6b00;color:white;" onclick="abrirDownloader('ssstik')">⬇️ SSSTik</button>
           <button class="btn" style="margin:0;background:#5a2d8a;color:white;" onclick="abrirDownloader('tikmate')">⬇️ TikMate</button>
+          <button class="btn btn-gray" style="margin:0;" onclick="abrirDownloader('downloadtiktok')">⬇️ DLTikTok</button>
         </div>
         <button class="btn btn-gray" style="margin-top:4px;" onclick="apenasCopiouLink('shopee-dl-url')">📋 Só copiar o link</button>
       </div>
+
       <div class="card">
         <div class="card-hd">🌐 Abrir downloaders direto</div>
         <div style="font-size:12px;color:#888;margin-bottom:12px;">Clique para abrir o site. Cole o link da Shopee lá dentro.</div>
-        <a href="https://snaptik.app/pt" target="_blank" rel="noopener" class="dl-option-card">
-          <div><div class="dl-option-name">SnapTik</div><div class="dl-option-desc">✅ Melhor para vídeos Shopee — sem marca d'água</div></div>
+
+        <!-- SVDown como primeira opção — destaque especial -->
+        <a href="https://svdown.com" target="_blank" rel="noopener" class="dl-option-card svdown-card">
+          <div>
+            <div class="dl-option-name">⭐ SVDown</div>
+            <div class="dl-option-desc">✅ Especialista em Shopee — sem marca d'água, sem cadastro</div>
+          </div>
           <span class="dl-tag">Recomendado</span>
+        </a>
+
+        <a href="https://snaptik.app/pt" target="_blank" rel="noopener" class="dl-option-card">
+          <div><div class="dl-option-name">SnapTik</div><div class="dl-option-desc">Ótimo para vídeos Shopee — sem marca d'água</div></div>
+          <span style="font-size:12px;">→</span>
         </a>
         <a href="https://ssstik.io/pt" target="_blank" rel="noopener" class="dl-option-card">
           <div><div class="dl-option-name">SSSTik</div><div class="dl-option-desc">Rápido, sem login, HD</div></div>
@@ -518,8 +534,9 @@ function tgLogAppSW(msg,ok){
         </a>
       </div>
     </div>
+    <!-- ===== FIM DOWNLOAD SHOPEE ===== -->
 
-    <!-- ===== DOWNLOAD INSTAGRAM — NOVO ===== -->
+    <!-- ===== DOWNLOAD INSTAGRAM ===== -->
     <div id="s-instadl" class="sec">
       <div class="ig-card">
         <div class="ig-card-hd">📸 Download Vídeo Instagram — Sem Marca d'Água</div>
@@ -546,7 +563,6 @@ function tgLogAppSW(msg,ok){
       <div class="ig-card">
         <div class="ig-card-hd">🌐 Sites de Download — Instagram</div>
         <div style="font-size:12px;color:#555;margin-bottom:12px;">Todos sem marca d'água, sem login, totalmente gratuitos.</div>
-
         <a href="https://snapinsta.app/pt" target="_blank" rel="noopener" class="ig-option">
           <div><div class="ig-option-name">SnapInsta</div><div class="ig-option-desc">✅ Reels, Posts e Stories — Melhor opção</div></div>
           <span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:#833ab4;color:white;">Top</span>
@@ -900,13 +916,10 @@ function tgLogAppSW(msg,ok){
       </div>
     </div>
 
-    <!-- ===== TELEGRAM — CORRIGIDO (Service Worker real) ===== -->
+    <!-- TELEGRAM -->
     <div id="s-telegram" class="sec">
       <div id="sw-badge-wrap" style="margin-bottom:8px;"></div>
-
-      <!-- Status SW -->
       <div id="sw-status-detail" class="sw-status-box sw-warn" style="margin-bottom:12px;"></div>
-
       <div class="tg-status-bar">
         <div class="tg-dot" id="tg-dot"></div>
         <span id="tg-status-txt">Bot desconectado — configure abaixo</span>
@@ -1298,7 +1311,7 @@ function selTplCat(el, cat) { document.getElementById('tpl-tabs').querySelectorA
 function filtrar(el, cat) { document.getElementById('filtros').querySelectorAll('.filter-pill').forEach(function(p) { p.classList.remove('on'); }); el.classList.add('on'); filtroAtual = cat; renderVitrine(); }
 function updStats() { cnts.prod = prods.length; ['prod', 'afl', 'copy', 'wpp'].forEach(function(k) { var e = document.getElementById('cnt-' + k); if (e) e.textContent = cnts[k]; }); svpSet('svp_cnts', cnts); svpSet('svp_prods', prods); }
 
-// ===== DOWNLOAD SHOPEE — CORRIGIDO (sem SVXtract) =====
+// ===== DOWNLOAD — Downloaders com SVDown adicionado =====
 function copiarParaClipboard(texto) {
   return new Promise(function(resolve) {
     if (!texto) { resolve(false); return; }
@@ -1320,8 +1333,9 @@ function copiarParaClipboard(texto) {
   });
 }
 
-// Downloaders Shopee — SVXtract REMOVIDO, substituído por TikMate e DownloadTikTok
+// ===== SVDown ADICIONADO como primeira opção =====
 var downloaderUrlsShopee = {
+  svdown:         function(url) { return 'https://svdown.com'; },
   snaptik:        function(url) { return 'https://snaptik.app/pt'; },
   savefrom:       function(url) { return 'https://en.savefrom.net/#url=' + encodeURIComponent(url); },
   ssstik:         function(url) { return 'https://ssstik.io/pt#url=' + encodeURIComponent(url); },
@@ -1329,19 +1343,18 @@ var downloaderUrlsShopee = {
   downloadtiktok: function(url) { return 'https://www.downloadtiktok.app/pt'; }
 };
 
-// Downloaders Instagram — todos sem marca d'água
 var downloaderUrlsIG = {
-  snapinsta:   function(url) { return 'https://snapinsta.app/pt'; },
-  igdownloader:function(url) { return 'https://igdownloader.app/pt'; },
-  instafinsta: function(url) { return 'https://instafinsta.com'; },
-  saveinsta:   function(url) { return 'https://save-insta.app/pt'; }
+  snapinsta:    function(url) { return 'https://snapinsta.app/pt'; },
+  igdownloader: function(url) { return 'https://igdownloader.app/pt'; },
+  instafinsta:  function(url) { return 'https://instafinsta.com'; },
+  saveinsta:    function(url) { return 'https://save-insta.app/pt'; }
 };
 
 function abrirDownloader(nome) {
   var url = (document.getElementById('shopee-dl-url').value || '').trim();
   if (!url) { alert('⚠️ Cole o link da Shopee primeiro!'); document.getElementById('shopee-dl-url').focus(); return; }
   var fn = downloaderUrlsShopee[nome];
-  var destino = fn ? fn(url) : 'https://snaptik.app/pt';
+  var destino = fn ? fn(url) : 'https://svdown.com';
   copiarParaClipboard(url).then(function(ok) {
     if (ok) alert('✅ Link copiado!\n\nCole no campo do site que vai abrir (Ctrl+V ou segurar+Colar).');
     else alert('⚠️ Não copiou automático.\nCopie o link manualmente:\n' + url);
@@ -1679,13 +1692,12 @@ function enviarTpl() { var t = document.getElementById('tpl-edit').value, l = do
 function copiarTpl() { copiarParaClipboard((document.getElementById('tpl-edit').value + (document.getElementById('tpl-link').value ? '\n\n' + document.getElementById('tpl-link').value : '')).trim()).then(function() { alert('Copiado!'); }); }
 function baixar(nome, c) { var b = new Blob([c], { type: 'text/plain;charset=utf-8' }), u = URL.createObjectURL(b), a = document.createElement('a'); a.href = u; a.download = nome; a.click(); URL.revokeObjectURL(u); }
 
-// ===== TELEGRAM — CORRIGIDO: usa Service Worker para aba fechada =====
+// ===== TELEGRAM =====
 var tgAutoAtivo = false, tgAutoIdx = 0, tgFallbackTimer = null;
 var tgIntervalo = parseInt(localStorage.getItem('tg_intervalo') || '10');
 var tgAutoDest = localStorage.getItem('tg_auto_dest') || 'ambos';
 var tgManDest = 'ambos', tgManCDt = 'ambos', tgManProdSel = null;
 
-// Atualiza painel de status do SW
 function atualizarStatusSW() {
   var swOk = !!window._swOk;
   var badge = document.getElementById('sw-badge-wrap');
@@ -1693,8 +1705,8 @@ function atualizarStatusSW() {
   var autoInfo = document.getElementById('sw-auto-info');
   if (badge) badge.innerHTML = '<span class="sw-badge ' + (swOk ? 'ok' : 'warn') + '">' + (swOk ? '✅ Service Worker ativo — funciona com aba fechada' : '⚠️ Service Worker indisponível — mantenha a aba aberta') + '</span>';
   var msg = swOk
-    ? '✅ O bot continua enviando mesmo com a tela bloqueada ou aba minimizada! O Service Worker gerencia os envios em segundo plano.'
-    : '⚠️ Seu navegador não suportou o Service Worker nesta sessão (pode ser modo privado ou HTTPS necessário). Mantenha a aba aberta para os envios funcionarem.';
+    ? '✅ O bot continua enviando mesmo com a tela bloqueada ou aba minimizada!'
+    : '⚠️ Seu navegador não suportou o Service Worker nesta sessão. Mantenha a aba aberta para os envios funcionarem.';
   var cls = swOk ? 'sw-ok' : 'sw-warn';
   if (detail) { detail.textContent = msg; detail.className = 'sw-status-box ' + cls; }
   if (autoInfo) { autoInfo.textContent = msg; autoInfo.className = 'sw-status-box ' + cls; }
@@ -1709,31 +1721,19 @@ function tgLogApp(msg, tipo) {
   });
 }
 
-// Inicia envio — usa SW se disponível, senão fallback com setTimeout
 function tgIniciarAuto() {
   var prodsList = npGetLista().filter(function(p) { return p.ativo; });
   if (!prodsList.length) { alert('Cadastre pelo menos 1 produto ativo!'); return; }
   if (!localStorage.getItem('tg_token')) { alert('Configure o token do bot primeiro!'); return; }
   tgAutoAtivo = true; tgAtualizarUI(true);
   tgLogApp('▶️ Iniciando envio automático · ' + prodsList.length + ' produto(s) · ' + tgIntervalo + 'min', 'ok');
-
   if (window._swOk && window._swReg && window._swReg.active) {
-    // Usa Service Worker — funciona com aba fechada
-    var cfg = {
-      token: localStorage.getItem('tg_token') || '',
-      canal: localStorage.getItem('tg_canal') || '',
-      grupo: localStorage.getItem('tg_grupo') || '',
-      dest: tgAutoDest,
-      produtos: prodsList,
-      intervaloMs: tgIntervalo * 60 * 1000
-    };
+    var cfg = { token: localStorage.getItem('tg_token') || '', canal: localStorage.getItem('tg_canal') || '', grupo: localStorage.getItem('tg_grupo') || '', dest: tgAutoDest, produtos: prodsList, intervaloMs: tgIntervalo * 60 * 1000 };
     window._swReg.active.postMessage({ type: 'START_TG', cfg: cfg });
-    tgLogApp('✅ Service Worker ativo — bot continua mesmo com aba fechada!', 'ok');
+    tgLogApp('✅ Service Worker ativo!', 'ok');
   } else {
-    // Fallback: setTimeout na aba (precisa ficar aberta)
     tgLogApp('⚠️ Modo fallback — mantenha a aba aberta', 'warn');
-    tgAutoIdx = 0;
-    tgFallbackEnviar();
+    tgAutoIdx = 0; tgFallbackEnviar();
   }
 }
 
@@ -1750,11 +1750,7 @@ async function tgFallbackEnviar() {
 
 function tgPararAuto() {
   tgAutoAtivo = false;
-  // Para SW
-  if (window._swOk && window._swReg && window._swReg.active) {
-    window._swReg.active.postMessage({ type: 'STOP_TG' });
-  }
-  // Para fallback
+  if (window._swOk && window._swReg && window._swReg.active) window._swReg.active.postMessage({ type: 'STOP_TG' });
   if (tgFallbackTimer) { clearTimeout(tgFallbackTimer); tgFallbackTimer = null; }
   tgAtualizarUI(false);
   tgLogApp('⏹ Envio automático parado.', 'warn');
@@ -1768,11 +1764,9 @@ function tgAtualizarUI(ativo) {
   var st = document.getElementById('auto-status');
   if (st) {
     if (ativo) {
-      var swOk = !!window._swOk;
-      st.style.display = 'block';
-      st.style.background = swOk ? '#e8f5e1' : '#fef8e1';
-      st.style.color = swOk ? '#1a6e35' : '#7a5800';
-      st.textContent = (swOk ? '✅ Ativo via Service Worker — funciona em segundo plano! ' : '⚠️ Ativo (mantenha a aba aberta) — ') + npGetLista().filter(function(p) { return p.ativo; }).length + ' produto(s) a cada ' + tgIntervalo + ' min';
+      var swOk = !!window._swOk; st.style.display = 'block';
+      st.style.background = swOk ? '#e8f5e1' : '#fef8e1'; st.style.color = swOk ? '#1a6e35' : '#7a5800';
+      st.textContent = (swOk ? '✅ Ativo via Service Worker! ' : '⚠️ Ativo (mantenha a aba aberta) — ') + npGetLista().filter(function(p) { return p.ativo; }).length + ' produto(s) a cada ' + tgIntervalo + ' min';
     } else { st.style.display = 'none'; }
   }
 }
@@ -1845,11 +1839,7 @@ function tgSetIntervalo(min, el) {
   tgIntervalo = min; localStorage.setItem('tg_intervalo', min);
   document.getElementById('intervalo-val').textContent = min;
   document.querySelectorAll('.ipill').forEach(function(p) { p.classList.remove('on'); }); if (el) el.classList.add('on');
-  if (tgAutoAtivo) {
-    tgLogApp('⏱️ Intervalo atualizado para ' + min + ' min. Reiniciando...', 'warn');
-    tgPararAuto();
-    setTimeout(tgIniciarAuto, 600);
-  }
+  if (tgAutoAtivo) { tgLogApp('⏱️ Intervalo atualizado. Reiniciando...', 'warn'); tgPararAuto(); setTimeout(tgIniciarAuto, 600); }
 }
 
 function tgAutoSetDest(d) { tgAutoDest = d; localStorage.setItem('tg_auto_dest', d); ['ambos', 'canal', 'grupo'].forEach(function(x) { var el = document.getElementById('auto-pill-' + x); if (el) el.classList.toggle('on', x === d); }); }
@@ -1984,7 +1974,6 @@ carregarCfg();
   updStats(); renderVitrine(); renderAgenda(); renderHistoricoAfl(); npRender(); renderTpls();
   verificarSessao();
   setInterval(agVerificar, 30000); agVerificar();
-  // Atualiza status SW após tentativa de registro (delay para dar tempo)
   setTimeout(atualizarStatusSW, 1500);
   setTimeout(atualizarStatusSW, 4000);
 })();
