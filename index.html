@@ -217,11 +217,13 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 .sw-status-box{border-radius:12px;padding:12px;margin-bottom:12px;font-size:12px;line-height:1.7;}
 .sw-ok{background:#e8f5e1;border:1.5px solid #9fe1cb;color:#1a6e35;}
 .sw-warn{background:#fef8e1;border:1.5px solid #f5d77a;color:#7a5800;}
+/* Banner de aviso de creditos */
+.creditos-aviso{background:#fff3cd;border:1.5px solid #ffc107;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#856404;line-height:1.6;display:none;}
+.creditos-aviso.show{display:block;}
 </style>
 </head>
 <body>
 
-<!-- SERVICE WORKER INLINE para Telegram rodar com aba fechada -->
 <script>
 (function registrarSW(){
   if(!('serviceWorker' in navigator)){window._swOk=false;return;}
@@ -469,7 +471,6 @@ function tgLogAppSW(msg,ok){
       </div>
     </div>
 
-    <!-- ===== DOWNLOAD SHOPEE — APENAS copiarlink.com.br ===== -->
     <div id="s-shopeedl" class="sec">
       <div class="card">
         <div class="card-hd">📥 Download Vídeo Shopee</div>
@@ -486,7 +487,6 @@ function tgLogAppSW(msg,ok){
         <button class="btn btn-r" style="font-size:14px;padding:14px;" onclick="abrirCopiarLink()">📥 Baixar Vídeo Shopee</button>
         <button class="btn btn-gray" style="margin-top:8px;" onclick="apenasCopiouLink('shopee-dl-url')">📋 Só copiar o link</button>
       </div>
-
       <div class="card">
         <div class="card-hd">🌐 Abrir downloader</div>
         <div style="font-size:12px;color:#888;margin-bottom:12px;">Clique para abrir o site. Cole o link da Shopee lá dentro.</div>
@@ -499,13 +499,11 @@ function tgLogAppSW(msg,ok){
         </a>
       </div>
     </div>
-    <!-- ===== FIM DOWNLOAD SHOPEE ===== -->
 
-    <!-- ===== DOWNLOAD INSTAGRAM ===== -->
     <div id="s-instadl" class="sec">
       <div class="ig-card">
         <div class="ig-card-hd">📸 Download Vídeo Instagram — Sem Marca d'Água</div>
-        <div style="font-size:12px;color:#555;margin-bottom:14px;line-height:1.6;">Cole o link do post, Reel ou Story do Instagram. O link será copiado e o site vai abrir pronto para baixar.</div>
+        <div style="font-size:12px;color:#555;margin-bottom:14px;line-height:1.6;">Cole o link do post, Reel ou Story do Instagram.</div>
         <lbl>Link do Instagram</lbl>
         <input type="text" id="ig-dl-url" placeholder="https://www.instagram.com/reel/... ou /p/..."/>
         <div style="background:#fdf5ff;border:1.5px solid #e0d0f0;border-radius:10px;padding:12px;font-size:12px;color:#5a2d8a;line-height:1.7;margin:12px 0;">
@@ -513,8 +511,7 @@ function tgLogAppSW(msg,ok){
           1. Abra o Instagram → vá no post/Reel<br>
           2. Toque nos 3 pontinhos → <strong>Copiar link</strong><br>
           3. Cole o link acima<br>
-          4. Clique em um downloader abaixo<br>
-          5. Cole o link no site que abrir e baixe!
+          4. Clique em um downloader abaixo
         </div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
           <button class="ig-btn" style="margin:0;padding:10px;" onclick="abrirDownloaderIG('snapinsta')">⬇️ SnapInsta</button>
@@ -524,53 +521,19 @@ function tgLogAppSW(msg,ok){
         </div>
         <button class="btn btn-gray" style="margin-top:4px;" onclick="apenasCopiouLink('ig-dl-url')">📋 Só copiar o link</button>
       </div>
-
       <div class="ig-card">
         <div class="ig-card-hd">🌐 Sites de Download — Instagram</div>
-        <div style="font-size:12px;color:#555;margin-bottom:12px;">Todos sem marca d'água, sem login, totalmente gratuitos.</div>
-        <a href="https://snapinsta.app/pt" target="_blank" rel="noopener" class="ig-option">
-          <div><div class="ig-option-name">SnapInsta</div><div class="ig-option-desc">✅ Reels, Posts e Stories — Melhor opção</div></div>
-          <span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:#833ab4;color:white;">Top</span>
-        </a>
-        <a href="https://igdownloader.app/pt" target="_blank" rel="noopener" class="ig-option">
-          <div><div class="ig-option-name">IGDownloader</div><div class="ig-option-desc">Download Reels em HD sem marca</div></div>
-          <span style="font-size:12px;">→</span>
-        </a>
-        <a href="https://instafinsta.com" target="_blank" rel="noopener" class="ig-option">
-          <div><div class="ig-option-name">InstaFinsta</div><div class="ig-option-desc">Rápido e sem registro</div></div>
-          <span style="font-size:12px;">→</span>
-        </a>
-        <a href="https://save-insta.app/pt" target="_blank" rel="noopener" class="ig-option">
-          <div><div class="ig-option-name">SaveInsta</div><div class="ig-option-desc">Fotos, vídeos e Stories</div></div>
-          <span style="font-size:12px;">→</span>
-        </a>
-        <a href="https://instasave.io" target="_blank" rel="noopener" class="ig-option">
-          <div><div class="ig-option-name">InstaSave.io</div><div class="ig-option-desc">Alternativa estável para Reels</div></div>
-          <span style="font-size:12px;">→</span>
-        </a>
-        <a href="https://reelsaver.net" target="_blank" rel="noopener" class="ig-option">
-          <div><div class="ig-option-name">ReelSaver</div><div class="ig-option-desc">Específico para Instagram Reels</div></div>
-          <span style="font-size:12px;">→</span>
-        </a>
-      </div>
-
-      <div class="card">
-        <div class="card-hd">💡 Dica — Sem precisar de site</div>
-        <div style="font-size:13px;color:#333;line-height:1.8;">
-          <strong>📱 No celular (Android):</strong><br>
-          Instale o app <strong>AnyToDMB</strong> ou <strong>Video Downloader for Instagram</strong> na Play Store.<br><br>
-          <strong>🍎 No iPhone:</strong><br>
-          Use o atalho <strong>Repost for Instagram</strong> ou o app <strong>Reposter</strong>.<br><br>
-          <strong>💻 No PC:</strong><br>
-          Use a extensão <strong>Video DownloadHelper</strong> no Chrome/Firefox.
-        </div>
+        <a href="https://snapinsta.app/pt" target="_blank" rel="noopener" class="ig-option"><div><div class="ig-option-name">SnapInsta</div><div class="ig-option-desc">✅ Reels, Posts e Stories — Melhor opção</div></div><span style="font-size:10px;font-weight:800;padding:2px 8px;border-radius:20px;background:#833ab4;color:white;">Top</span></a>
+        <a href="https://igdownloader.app/pt" target="_blank" rel="noopener" class="ig-option"><div><div class="ig-option-name">IGDownloader</div><div class="ig-option-desc">Download Reels em HD sem marca</div></div><span style="font-size:12px;">→</span></a>
+        <a href="https://instafinsta.com" target="_blank" rel="noopener" class="ig-option"><div><div class="ig-option-name">InstaFinsta</div><div class="ig-option-desc">Rápido e sem registro</div></div><span style="font-size:12px;">→</span></a>
+        <a href="https://save-insta.app/pt" target="_blank" rel="noopener" class="ig-option"><div><div class="ig-option-name">SaveInsta</div><div class="ig-option-desc">Fotos, vídeos e Stories</div></div><span style="font-size:12px;">→</span></a>
       </div>
     </div>
-    <!-- ===== FIM INSTAGRAM ===== -->
 
     <div id="s-kit" class="sec">
       <div class="card">
         <div class="card-hd">🚀 Kit lancamento completo</div>
+        <div class="creditos-aviso" id="aviso-creditos">⚠️ <strong>Créditos OpenRouter baixos.</strong> Acesse <a href="https://openrouter.ai/settings/credits" target="_blank" style="color:#856404;">openrouter.ai/settings/credits</a> para adicionar créditos, ou aguarde a renovação diária gratuita.</div>
         <div style="font-size:12px;color:#888;margin-bottom:12px;">A IA gera TUDO: copy + legenda + roteiro + mensagem WPP.</div>
         <lbl>Produto</lbl><input type="text" id="kit-prod" placeholder="Ex: Vestido floral P/M/G"/>
         <lbl>Preco</lbl><input type="text" id="kit-preco" placeholder="Ex: R$49,90"/>
@@ -695,6 +658,7 @@ function tgLogAppSW(msg,ok){
     <div id="s-copy" class="sec">
       <div class="card">
         <div class="card-hd">✍️ Copy de vendas com IA</div>
+        <div class="creditos-aviso" id="aviso-creditos-copy">⚠️ <strong>Créditos OpenRouter baixos.</strong> Acesse <a href="https://openrouter.ai/settings/credits" target="_blank" style="color:#856404;">openrouter.ai/settings/credits</a> para adicionar créditos.</div>
         <lbl>Produto</lbl><input type="text" id="cp-prod" placeholder="Ex: Tenis branco feminino R$89,90"/>
         <lbl>Tipo</lbl>
         <div class="tab-inner">
@@ -842,6 +806,7 @@ function tgLogAppSW(msg,ok){
     <div id="s-seo" class="sec">
       <div class="card">
         <div class="card-hd">📝 Descricao SEO para Shopee</div>
+        <div class="creditos-aviso" id="aviso-creditos-seo">⚠️ <strong>Créditos OpenRouter baixos.</strong> Acesse <a href="https://openrouter.ai/settings/credits" target="_blank" style="color:#856404;">openrouter.ai/settings/credits</a> para adicionar créditos.</div>
         <lbl>Nome do produto</lbl><input type="text" id="seo-prod" placeholder="Ex: Vestido floral manga longa feminino"/>
         <lbl>Palavras-chave</lbl><input type="text" id="seo-keys" placeholder="Ex: vestido, moda feminina, verao"/>
         <lbl>Preco e diferenciais</lbl><input type="text" id="seo-diff" placeholder="Ex: R$49,90, frete gratis, P M G"/>
@@ -1025,7 +990,6 @@ function tgLogAppSW(msg,ok){
 </div>
 
 <script>
-// ===== CONFIG =====
 var SENHA_ADMIN_PADRAO = 'ADMIN@2024';
 var CFG = { wpp: '5511999998888', nome: 'Shopee Viral Pro' };
 var LICENSE_SECRET = 'SVP2024SECRET';
@@ -1069,7 +1033,6 @@ function verificarSenha(s) {
   return l;
 }
 
-// ===== TELAS =====
 function mostrar(id) {
   ['tela-login','tela-admin','tela-admin-painel','tela-app'].forEach(function(t) {
     var el = document.getElementById(t);
@@ -1129,7 +1092,6 @@ function verificarSessao() {
   } catch(e) {}
 }
 
-// ===== ADMIN =====
 function adminTab(id) {
   document.querySelectorAll('.admin-sec').forEach(function(s) { s.classList.remove('on'); });
   document.querySelectorAll('.admin-tab').forEach(function(t) { t.classList.remove('on'); });
@@ -1240,7 +1202,6 @@ function salvarCfgAdmin() {
   document.getElementById('adm-senha-nova').value = '';
 }
 
-// ===== APP =====
 function svpGet(k, d) { try { var v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch(e) { return d; } }
 function svpSet(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch(e) {} }
 
@@ -1276,7 +1237,100 @@ function selTplCat(el, cat) { document.getElementById('tpl-tabs').querySelectorA
 function filtrar(el, cat) { document.getElementById('filtros').querySelectorAll('.filter-pill').forEach(function(p) { p.classList.remove('on'); }); el.classList.add('on'); filtroAtual = cat; renderVitrine(); }
 function updStats() { cnts.prod = prods.length; ['prod', 'afl', 'copy', 'wpp'].forEach(function(k) { var e = document.getElementById('cnt-' + k); if (e) e.textContent = cnts[k]; }); svpSet('svp_cnts', cnts); svpSet('svp_prods', prods); }
 
-// ===== DOWNLOAD SHOPEE — apenas copiarlink.com.br =====
+function mostrarAvisoCreditos() {
+  document.querySelectorAll('.creditos-aviso').forEach(function(el) { el.classList.add('show'); });
+}
+
+// ============================================================
+// FUNÇÃO chamarIA — CORRIGIDA (sem erro de créditos)
+// ============================================================
+async function chamarIA(prompt, max) {
+  var chave = localStorage.getItem('openrouter_key') || '';
+  if (!chave) throw new Error('Configure sua chave OpenRouter em Telegram > Config');
+
+  // Modelos ordenados do mais leve para o mais pesado (economiza créditos)
+  var MODELS = [
+    'meta-llama/llama-3.1-8b-instruct:free',
+    'google/gemma-3-12b-it:free',
+    'mistralai/mistral-small-3.1-24b-instruct:free',
+    'meta-llama/llama-3.3-70b-instruct:free',
+    'openrouter/auto'
+  ];
+
+  var lastError = null;
+  // ✅ CORREÇÃO PRINCIPAL: limitar tokens para não estourar créditos
+  var maxTokens = Math.min(max || 500, 450);
+
+  for (var mi = 0; mi < MODELS.length; mi++) {
+    // Reduz ainda mais os tokens nas tentativas seguintes
+    var tentativaTokens = mi === 0 ? maxTokens : Math.min(maxTokens, 300);
+
+    try {
+      var r = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + chave,
+          'Content-Type': 'application/json',
+          'HTTP-Referer': window.location.href,
+          'X-Title': 'Shopee Viral Pro'
+        },
+        body: JSON.stringify({
+          model: MODELS[mi],
+          messages: [
+            { role: 'system', content: 'Especialista em vendas Shopee Brasil. Seja direto, conciso e pratico, use emojis. Responda sempre em portugues brasileiro.' },
+            { role: 'user', content: prompt }
+          ],
+          max_tokens: tentativaTokens
+        })
+      });
+
+      var data = await r.json();
+
+      if (!r.ok) {
+        var eMsg = (data.error && data.error.message) ? data.error.message : 'Erro HTTP ' + r.status;
+
+        // ✅ Erro de créditos insuficientes — tenta próximo modelo com menos tokens
+        if (eMsg.indexOf('credits') !== -1 || eMsg.indexOf('afford') !== -1 || eMsg.indexOf('credits') !== -1) {
+          mostrarAvisoCreditos();
+          lastError = new Error('Creditos insuficientes. Acesse openrouter.ai/settings/credits para adicionar creditos ou aguarde renovacao diaria gratuita.');
+          continue;
+        }
+
+        if (r.status === 400 || r.status === 404 || eMsg.indexOf('No endpoints') !== -1 || eMsg.indexOf('not a valid model') !== -1) {
+          lastError = new Error(eMsg);
+          continue;
+        }
+
+        throw new Error(eMsg);
+      }
+
+      var txt = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+      if (!txt) { lastError = new Error('Resposta vazia'); continue; }
+      return txt;
+
+    } catch(e) {
+      if (e.message && (
+        e.message.indexOf('No endpoints') !== -1 ||
+        e.message.indexOf('not a valid model') !== -1 ||
+        e.message.indexOf('credits') !== -1 ||
+        e.message.indexOf('afford') !== -1
+      )) {
+        lastError = e;
+        continue;
+      }
+      throw e;
+    }
+  }
+
+  // Mensagem de erro amigável em português
+  var msgFinal = (lastError && lastError.message && (lastError.message.indexOf('Creditos') !== -1 || lastError.message.indexOf('credits') !== -1))
+    ? '⚠️ Creditos insuficientes no OpenRouter.\n\nAcesse openrouter.ai/settings/credits para adicionar creditos, ou aguarde a renovacao diaria gratuita.\n\nDica: A conta gratis renova todo dia!'
+    : 'Nenhum modelo IA disponivel. Verifique sua chave OpenRouter em Telegram > Config.';
+
+  throw new Error(msgFinal);
+}
+// ============================================================
+
 function copiarParaClipboard(texto) {
   return new Promise(function(resolve) {
     if (!texto) { resolve(false); return; }
@@ -1298,7 +1352,6 @@ function copiarParaClipboard(texto) {
   });
 }
 
-// Abre copiarlink.com.br copiando o link da Shopee primeiro
 function abrirCopiarLink() {
   var url = (document.getElementById('shopee-dl-url').value || '').trim();
   if (!url) { alert('⚠️ Cole o link da Shopee primeiro!'); document.getElementById('shopee-dl-url').focus(); return; }
@@ -1309,7 +1362,6 @@ function abrirCopiarLink() {
   });
 }
 
-// Downloaders Instagram
 var downloaderUrlsIG = {
   snapinsta:    function(url) { return 'https://snapinsta.app/pt'; },
   igdownloader: function(url) { return 'https://igdownloader.app/pt'; },
@@ -1337,11 +1389,9 @@ function apenasCopiouLink(inputId) {
   });
 }
 
-// Busca
 function buscarOfertas() { var t = document.getElementById('busca-termo').value.trim(); if (!t) { alert('Digite o que buscar!'); return; } window.open('https://www.google.com/search?q=' + encodeURIComponent(t + ' ' + document.getElementById('busca-filtro').value + ' site:shopee.com.br'), '_blank'); }
 function buscaRapida(q) { window.open('https://www.google.com/search?q=' + encodeURIComponent(q + ' site:shopee.com.br'), '_blank'); }
 
-// Afiliado
 function gerarLinkAfiliado() {
   var link = document.getElementById('afl-link-input').value.trim();
   var nome = document.getElementById('afl-nome').value.trim() || 'Produto';
@@ -1384,7 +1434,6 @@ function renderHistoricoAfl() {
   });
 }
 
-// Achadinhos
 function addAchado() {
   var nome = document.getElementById('a-nome').value.trim(), preco2 = document.getElementById('a-preco').value.trim();
   if (!nome || !preco2) { alert('Preencha nome e preco!'); return; }
@@ -1429,25 +1478,6 @@ function renderVitrine() {
   });
 }
 
-// IA
-async function chamarIA(prompt, max) {
-  var chave = localStorage.getItem('openrouter_key') || '';
-  if (!chave) throw new Error('Configure sua chave OpenRouter em Telegram > Config');
-  var MODELS = ['openrouter/auto', 'meta-llama/llama-3.3-70b-instruct:free', 'meta-llama/llama-3.1-8b-instruct:free', 'google/gemma-3-12b-it:free', 'mistralai/mistral-small-3.1-24b-instruct:free'];
-  var lastError = null;
-  for (var mi = 0; mi < MODELS.length; mi++) {
-    try {
-      var r = await fetch('https://openrouter.ai/api/v1/chat/completions', { method: 'POST', headers: { 'Authorization': 'Bearer ' + chave, 'Content-Type': 'application/json', 'HTTP-Referer': window.location.href, 'X-Title': 'Shopee Viral Pro' }, body: JSON.stringify({ model: MODELS[mi], messages: [{ role: 'system', content: 'Especialista em vendas Shopee Brasil. Seja direto, pratico, use emojis. Responda sempre em portugues brasileiro.' }, { role: 'user', content: prompt }], max_tokens: max || 1000 }) });
-      var data = await r.json();
-      if (!r.ok) { var eMsg = (data.error && data.error.message) ? data.error.message : 'Erro HTTP ' + r.status; if (r.status === 400 || r.status === 404 || eMsg.indexOf('No endpoints') !== -1 || eMsg.indexOf('not a valid model') !== -1) { lastError = new Error(eMsg); continue; } throw new Error(eMsg); }
-      var txt = (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
-      if (!txt) { lastError = new Error('Resposta vazia'); continue; }
-      return txt;
-    } catch(e) { if (e.message && (e.message.indexOf('No endpoints') !== -1 || e.message.indexOf('not a valid model') !== -1)) { lastError = e; continue; } throw e; }
-  }
-  throw lastError || new Error('Nenhum modelo disponivel');
-}
-
 function animBar(id) {
   var el = document.getElementById(id), p = 0;
   var t = setInterval(function() { p += Math.random() * 11; if (p >= 88) p = 88; el.style.width = Math.min(p, 100) + '%'; }, 180);
@@ -1480,7 +1510,7 @@ async function gerarCopy() {
   document.getElementById('res-cp').style.display = 'none'; document.getElementById('load-cp').style.display = 'block'; document.getElementById('btn-cp').disabled = true;
   var parar = animBar('bar-cp');
   try {
-    var txt = await chamarIA('Crie 3 copies de ' + document.getElementById('cp-tipo').value + ' para: ' + prod + '. Canal: ' + document.getElementById('cp-canal').value + (document.getElementById('cp-diff').value ? '. Diferencial: ' + document.getElementById('cp-diff').value : '') + '. Formato:\n\nCOPY 1:\n[texto]\n\nCOPY 2:\n[texto]\n\nCOPY 3:\n[texto]', 1200);
+    var txt = await chamarIA('Crie 3 copies curtas de ' + document.getElementById('cp-tipo').value + ' para: ' + prod + '. Canal: ' + document.getElementById('cp-canal').value + (document.getElementById('cp-diff').value ? '. Diferencial: ' + document.getElementById('cp-diff').value : '') + '. Formato:\nCOPY 1:\n[texto]\nCOPY 2:\n[texto]\nCOPY 3:\n[texto]', 450);
     window._copies = [];
     for (var i = 1; i <= 3; i++) { var re = new RegExp('COPY ' + i + ':[\\s\\S]*?(?=COPY ' + (i + 1) + ':|$)', 'i'); var m = txt.match(re); window._copies.push(m ? m[0].replace(/COPY \d+:/i, '').trim() : (i === 1 ? txt : '')); }
     cnts.copy++; updStats(); parar(); renderItens('cp-content', window._copies, 'Copy', ['badge-r', 'badge-b', 'badge-g']); document.getElementById('res-cp').style.display = 'block';
@@ -1493,7 +1523,7 @@ async function gerarRoteiro() {
   document.getElementById('res-vd').style.display = 'none'; document.getElementById('load-vd').style.display = 'block'; document.getElementById('btn-vd').disabled = true;
   var parar = animBar('bar-vd');
   try {
-    var txt = await chamarIA('Roteiro viral de ' + document.getElementById('vd-dur').value + ' para: ' + prod + '. Formato: ' + document.getElementById('vd-fmt').value + (document.getElementById('vd-pub').value ? '. Publico: ' + document.getElementById('vd-pub').value : '') + '. Estruture:\n[GANCHO 0-3s]\n[MEIO]\n[CTA FINAL]', 1200);
+    var txt = await chamarIA('Roteiro viral conciso de ' + document.getElementById('vd-dur').value + ' para: ' + prod + '. Formato: ' + document.getElementById('vd-fmt').value + (document.getElementById('vd-pub').value ? '. Publico: ' + document.getElementById('vd-pub').value : '') + '. Estruture:\n[GANCHO 0-3s]\n[MEIO]\n[CTA FINAL]', 400);
     window._roteiro = txt; parar(); document.getElementById('vd-content').innerHTML = '<div style="font-size:13px;color:#333;line-height:1.9;white-space:pre-wrap;background:#fff8f6;border-radius:12px;padding:12px;">' + txt + '</div>'; document.getElementById('res-vd').style.display = 'block'; document.getElementById('lg-prod').value = prod;
   } catch(e) { alert('Erro: ' + e.message); }
   document.getElementById('load-vd').style.display = 'none'; document.getElementById('btn-vd').disabled = false;
@@ -1504,7 +1534,7 @@ async function gerarLegenda() {
   document.getElementById('res-lg').style.display = 'none'; document.getElementById('load-lg').style.display = 'block'; document.getElementById('btn-lg').disabled = true;
   var parar = animBar('bar-lg');
   try {
-    var txt = await chamarIA('Crie 3 legendas virais para ' + document.getElementById('lg-plat').value + ' para: ' + prod + '. Tom: ' + document.getElementById('lg-tom').value + '. Formato:\n\nLEGENDA 1:\n[texto]\n\nLEGENDA 2:\n[texto]\n\nLEGENDA 3:\n[texto]', 1000);
+    var txt = await chamarIA('Crie 3 legendas virais curtas para ' + document.getElementById('lg-plat').value + ' para: ' + prod + '. Tom: ' + document.getElementById('lg-tom').value + '. Formato:\nLEGENDA 1:\n[texto]\nLEGENDA 2:\n[texto]\nLEGENDA 3:\n[texto]', 400);
     window._legendas = [];
     for (var i = 1; i <= 3; i++) { var re = new RegExp('LEGENDA ' + i + ':[\\s\\S]*?(?=LEGENDA ' + (i + 1) + ':|$)', 'i'); var m = txt.match(re); window._legendas.push(m ? m[0].replace(/LEGENDA \d+:/i, '').trim() : (i === 1 ? txt : '')); }
     parar(); renderItens('lg-content', window._legendas, 'Legenda', ['badge-r', 'badge-b', 'badge-g']); document.getElementById('res-lg').style.display = 'block';
@@ -1519,10 +1549,14 @@ async function gerarKitCompleto() {
   document.getElementById('res-kit').style.display = 'none'; document.getElementById('load-kit').style.display = 'block'; document.getElementById('btn-kit').disabled = true;
   var parar = animBar('bar-kit'), status = document.getElementById('kit-status'), copy2 = '', legenda = '', roteiro2 = '', wppMsg = '';
   try {
-    status.textContent = '1/4 Gerando copy...'; copy2 = await chamarIA('Crie a MELHOR copy de venda WhatsApp para: ' + prod + (preco2 ? ' por ' + preco2 : '') + (diff ? '. ' + diff : '') + '. Gatilhos mentais, urgencia, CTA.', 800);
-    status.textContent = '2/4 Gerando legenda...'; legenda = await chamarIA('Legenda viral TikTok/Reels para: ' + prod + (preco2 ? ' por ' + preco2 : '') + '. Girias, emojis, hashtags.', 600);
-    status.textContent = '3/4 Gerando roteiro...'; roteiro2 = await chamarIA('Roteiro viral 30s para: ' + prod + (preco2 ? ' por ' + preco2 : '') + '. [GANCHO 0-3s], [MEIO 3-25s], [CTA 25-30s].', 800);
-    status.textContent = '4/4 Montando mensagem...'; wppMsg = await chamarIA('Mensagem para grupo WhatsApp para: ' + prod + (preco2 ? ' por ' + preco2 : '') + (diff ? '. ' + diff : '') + (link ? '\nLink: ' + link : '') + '. Com emojis, urgencia e *negrito* WhatsApp.', 600);
+    status.textContent = '1/4 Gerando copy...';
+    copy2 = await chamarIA('Copy de venda WhatsApp para: ' + prod + (preco2 ? ' por ' + preco2 : '') + (diff ? '. ' + diff : '') + '. Gatilhos mentais, urgencia, CTA. Seja conciso.', 350);
+    status.textContent = '2/4 Gerando legenda...';
+    legenda = await chamarIA('Legenda viral TikTok para: ' + prod + (preco2 ? ' por ' + preco2 : '') + '. Emojis e hashtags. Seja conciso.', 300);
+    status.textContent = '3/4 Gerando roteiro...';
+    roteiro2 = await chamarIA('Roteiro viral 30s para: ' + prod + (preco2 ? ' por ' + preco2 : '') + '. [GANCHO], [MEIO], [CTA]. Conciso.', 300);
+    status.textContent = '4/4 Montando mensagem...';
+    wppMsg = await chamarIA('Mensagem WhatsApp para: ' + prod + (preco2 ? ' por ' + preco2 : '') + (diff ? '. ' + diff : '') + (link ? '\nLink: ' + link : '') + '. Emojis, urgencia. Conciso.', 300);
     parar();
     window._kitTexto = 'KIT DE LANCAMENTO\n=======\nProduto: ' + prod + '\n\nCOPY:\n' + copy2 + '\n\nLEGENDA:\n' + legenda + '\n\nROTEIRO:\n' + roteiro2 + '\n\nWHATSAPP:\n' + wppMsg + (link ? '\n\n' + link : '');
     var secs = [{ t: '✍️ Copy de vendas', c: '#EE4D2D', txt: copy2 }, { t: '🔥 Legenda viral', c: '#185FA5', txt: legenda }, { t: '🎬 Roteiro de video', c: '#3B6D11', txt: roteiro2 }, { t: '💬 Mensagem WhatsApp', c: '#25D366', txt: wppMsg + (link ? '\n\n' + link : '') }];
@@ -1551,7 +1585,7 @@ async function enviarChat() {
   var d2 = document.createElement('div'); d2.className = 'chat-msg chat-ia'; d2.id = 'typing-msg'; d2.textContent = '...'; wrap.appendChild(d2);
   wrap.scrollTop = wrap.scrollHeight;
   try {
-    var resp = await chamarIA(msg, 500);
+    var resp = await chamarIA(msg, 350);
     var typing = document.getElementById('typing-msg'); if (typing) typing.remove();
     chatHistorico.push({ role: 'assistant', content: resp });
     var d3 = document.createElement('div'); d3.className = 'chat-msg chat-ia'; d3.textContent = resp; wrap.appendChild(d3); wrap.scrollTop = wrap.scrollHeight;
@@ -1580,7 +1614,7 @@ async function gerarSEO() {
   document.getElementById('res-seo').style.display = 'none'; document.getElementById('load-seo').style.display = 'block'; document.getElementById('btn-seo').disabled = true;
   var parar = animBar('bar-seo');
   try {
-    var txt = await chamarIA('Titulo e descricao SEO para Shopee: ' + prod + '. Keywords: ' + document.getElementById('seo-keys').value + '. Detalhes: ' + document.getElementById('seo-diff').value + '. Formate:\n\nTITULO SEO:\n[titulo max 100 chars]\n\nDESCRICAO:\n[descricao completa]\n\nTAGS:\n[tags]', 900);
+    var txt = await chamarIA('Titulo SEO (max 80 chars) e descricao curta para Shopee: ' + prod + '. Keywords: ' + document.getElementById('seo-keys').value + '. Detalhes: ' + document.getElementById('seo-diff').value + '. Formate:\nTITULO SEO:\n[titulo]\nDESCRICAO:\n[descricao]\nTAGS:\n[tags]', 400);
     _seoTexto = txt; parar();
     document.getElementById('seo-content').innerHTML = '<div style="font-size:13px;color:#333;line-height:1.9;white-space:pre-wrap;background:#fff8f6;border-radius:12px;padding:12px;">' + txt + '</div>';
     document.getElementById('res-seo').style.display = 'block';
@@ -1593,7 +1627,7 @@ async function reescreverCopy() {
   var texto = document.getElementById('reesc-texto').value.trim(); if (!texto) { alert('Cole uma copy!'); return; }
   document.getElementById('btn-reesc').disabled = true; document.getElementById('btn-reesc').textContent = 'Reescrevendo...';
   try {
-    var txt = await chamarIA('Reescreva esta copy ' + document.getElementById('reesc-obj').value + '. Copy: "' + texto + '"', 600);
+    var txt = await chamarIA('Reescreva esta copy ' + document.getElementById('reesc-obj').value + '. Copy: "' + texto + '"', 350);
     var el = document.getElementById('res-reesc');
     el.innerHTML = '<div style="background:#fff8f6;border-radius:12px;padding:12px;font-size:13px;color:#333;line-height:1.7;white-space:pre-wrap;" id="reesc-result">' + txt + '</div><div style="display:flex;gap:6px;margin-top:8px;"><button class="kit-copy-btn" onclick="copiarParaClipboard(document.getElementById(\'reesc-result\').innerText).then(function(){alert(\'Copiado!\')})">📋 Copiar</button></div>';
     el.style.display = 'block';
@@ -1605,7 +1639,7 @@ async function gerarHashtags() {
   var prod = document.getElementById('hash-prod').value.trim(); if (!prod) { alert('Informe o produto ou nicho!'); return; }
   document.getElementById('btn-hash').disabled = true; document.getElementById('btn-hash').textContent = 'Gerando...';
   try {
-    var txt = await chamarIA('30 hashtags para ' + document.getElementById('hash-plat').value + ' para: ' + prod + '. Divida em:\n\nVIRAIS (10):\n\nMEDIAS (10):\n\nNICHO (10):\n\nSo em portugues.', 500);
+    var txt = await chamarIA('30 hashtags para ' + document.getElementById('hash-plat').value + ' para: ' + prod + '. Divida em:\nVIRAIS (10):\nMEDIAS (10):\nNICHO (10):\nSo em portugues.', 350);
     var el = document.getElementById('res-hash');
     el.innerHTML = '<div style="background:#fff8f6;border-radius:12px;padding:12px;font-size:13px;color:#333;line-height:2;white-space:pre-wrap;" id="hash-result">' + txt + '</div><button class="kit-copy-btn" style="margin-top:10px;" onclick="copiarParaClipboard(document.getElementById(\'hash-result\').innerText).then(function(){alert(\'Copiado!\')})">📋 Copiar todas</button>';
     el.style.display = 'block';
@@ -1659,9 +1693,7 @@ function atualizarStatusSW() {
   var detail = document.getElementById('sw-status-detail');
   var autoInfo = document.getElementById('sw-auto-info');
   if (badge) badge.innerHTML = '<span class="sw-badge ' + (swOk ? 'ok' : 'warn') + '">' + (swOk ? '✅ Service Worker ativo — funciona com aba fechada' : '⚠️ Service Worker indisponível — mantenha a aba aberta') + '</span>';
-  var msg = swOk
-    ? '✅ O bot continua enviando mesmo com a tela bloqueada ou aba minimizada!'
-    : '⚠️ Seu navegador não suportou o Service Worker nesta sessão. Mantenha a aba aberta para os envios funcionarem.';
+  var msg = swOk ? '✅ O bot continua enviando mesmo com a tela bloqueada ou aba minimizada!' : '⚠️ Seu navegador não suportou o Service Worker nesta sessão. Mantenha a aba aberta para os envios funcionarem.';
   var cls = swOk ? 'sw-ok' : 'sw-warn';
   if (detail) { detail.textContent = msg; detail.className = 'sw-status-box ' + cls; }
   if (autoInfo) { autoInfo.textContent = msg; autoInfo.className = 'sw-status-box ' + cls; }
@@ -1839,7 +1871,6 @@ function tgTab(id) {
   if (id === 'manual') manualRenderProds();
 }
 
-// Agenda
 function adicionarAgenda() {
   var hora = document.getElementById('ag-hora').value, desc = document.getElementById('ag-nome').value.trim() || 'Envio agendado', msg = document.getElementById('ag-msg').value.trim();
   if (!hora) { alert('Defina o horario!'); return; }
