@@ -4,6 +4,25 @@
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1.0"/>
 <title>Shopee Viral Pro</title>
+
+<!-- Meta Pixel Code -->
+<script>
+!function(f,b,e,v,n,t,s)
+{if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+n.queue=[];t=b.createElement(e);t.async=!0;
+t.src=v;s=b.getElementsByTagName(e)[0];
+s.parentNode.insertBefore(t,s)}(window, document,'script',
+'https://connect.facebook.net/en_US/fbevents.js');
+fbq('init', '1255535999229008');
+fbq('track', 'PageView');
+</script>
+<noscript><img height="1" width="1" style="display:none"
+src="https://www.facebook.com/tr?id=1255535999229008&ev=PageView&noscript=1"
+/></noscript>
+<!-- End Meta Pixel Code -->
+
 <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;700;800;900&display=swap" rel="stylesheet"/>
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -217,7 +236,6 @@ input:focus,textarea:focus,select:focus{border-color:var(--r);}
 .sw-status-box{border-radius:12px;padding:12px;margin-bottom:12px;font-size:12px;line-height:1.7;}
 .sw-ok{background:#e8f5e1;border:1.5px solid #9fe1cb;color:#1a6e35;}
 .sw-warn{background:#fef8e1;border:1.5px solid #f5d77a;color:#7a5800;}
-/* Banner de aviso de creditos */
 .creditos-aviso{background:#fff3cd;border:1.5px solid #ffc107;border-radius:12px;padding:12px 14px;margin-bottom:12px;font-size:12px;color:#856404;line-height:1.6;display:none;}
 .creditos-aviso.show{display:block;}
 </style>
@@ -299,6 +317,15 @@ function tgLogAppSW(msg,ok){
     while(el.children.length>40)el.removeChild(el.firstChild);
   });
 }
+
+// ===== FUNÇÃO PIXEL — dispara evento no clique do botão do grupo WPP =====
+function pixelGrupoWpp() {
+  try {
+    if (typeof fbq === 'function') {
+      fbq('track', 'Lead', { content_name: 'Grupo WhatsApp Afiliados Shopee' });
+    }
+  } catch(e) {}
+}
 </script>
 
 <!-- TELA LOGIN -->
@@ -315,9 +342,14 @@ function tgLogAppSW(msg,ok){
     <input class="login-inp" type="password" id="inp-senha" placeholder="Digite sua senha de acesso"/>
     <button class="login-btn" id="btn-entrar">Entrar no App</button>
     <div class="login-err" id="login-err">Senha incorreta ou expirada.</div>
-    <a href="https://chat.whatsapp.com/HM68M87zKbb4dJBpzTUSgt" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#25D366;color:white;border-radius:14px;padding:14px;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;text-decoration:none;margin:14px 0 6px;box-sizing:border-box;">
+
+    <!-- BOTÃO GRUPO WPP — TELA LOGIN — com Pixel -->
+    <a href="https://chat.whatsapp.com/HM68M87zKbb4dJBpzTUSgt" target="_blank" rel="noopener"
+       onclick="pixelGrupoWpp()"
+       style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#25D366;color:white;border-radius:14px;padding:14px;font-size:14px;font-weight:900;font-family:'Nunito',sans-serif;text-decoration:none;margin:14px 0 6px;box-sizing:border-box;">
       💬 Grupo de Afiliados da Shopee — Entrar Grátis
     </a>
+
     <div style="margin-top:12px;">
       <button id="btn-ir-admin" style="background:none;border:none;color:#bbb;font-size:12px;cursor:pointer;font-family:Nunito,sans-serif;text-decoration:underline;">🔐 Sou o administrador</button>
     </div>
@@ -455,7 +487,14 @@ function tgLogAppSW(msg,ok){
         <div class="stat"><div class="stat-v" id="cnt-copy">0</div><div class="stat-l">Copies geradas</div></div>
         <div class="stat"><div class="stat-v" id="cnt-wpp">0</div><div class="stat-l">Envios WPP</div></div>
       </div>
-      <a href="https://chat.whatsapp.com/HM68M87zKbb4dJBpzTUSgt" target="_blank" rel="noopener" style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#25D366;color:white;border-radius:12px;padding:13px 18px;font-size:13px;font-weight:900;font-family:'Nunito',sans-serif;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">💬 Grupo de Afiliados da Shopee — Entrar Grátis</a>
+
+      <!-- BOTÃO GRUPO WPP — TELA APP — com Pixel -->
+      <a href="https://chat.whatsapp.com/HM68M87zKbb4dJBpzTUSgt" target="_blank" rel="noopener"
+         onclick="pixelGrupoWpp()"
+         style="display:flex;align-items:center;justify-content:center;gap:10px;width:100%;background:#25D366;color:white;border-radius:12px;padding:13px 18px;font-size:13px;font-weight:900;font-family:'Nunito',sans-serif;text-decoration:none;margin-bottom:10px;box-sizing:border-box;">
+        💬 Grupo de Afiliados da Shopee — Entrar Grátis
+      </a>
+
       <div class="card">
         <div class="card-hd">⚡ Acesso rapido</div>
         <button class="btn btn-r" onclick="ir('kit')">🚀 Kit lancamento completo</button>
@@ -1241,14 +1280,10 @@ function mostrarAvisoCreditos() {
   document.querySelectorAll('.creditos-aviso').forEach(function(el) { el.classList.add('show'); });
 }
 
-// ============================================================
-// FUNÇÃO chamarIA — CORRIGIDA (sem erro de créditos)
-// ============================================================
 async function chamarIA(prompt, max) {
   var chave = localStorage.getItem('openrouter_key') || '';
   if (!chave) throw new Error('Configure sua chave OpenRouter em Telegram > Config');
 
-  // Modelos ordenados do mais leve para o mais pesado (economiza créditos)
   var MODELS = [
     'meta-llama/llama-3.1-8b-instruct:free',
     'google/gemma-3-12b-it:free',
@@ -1258,11 +1293,9 @@ async function chamarIA(prompt, max) {
   ];
 
   var lastError = null;
-  // ✅ CORREÇÃO PRINCIPAL: limitar tokens para não estourar créditos
   var maxTokens = Math.min(max || 500, 450);
 
   for (var mi = 0; mi < MODELS.length; mi++) {
-    // Reduz ainda mais os tokens nas tentativas seguintes
     var tentativaTokens = mi === 0 ? maxTokens : Math.min(maxTokens, 300);
 
     try {
@@ -1288,19 +1321,14 @@ async function chamarIA(prompt, max) {
 
       if (!r.ok) {
         var eMsg = (data.error && data.error.message) ? data.error.message : 'Erro HTTP ' + r.status;
-
-        // ✅ Erro de créditos insuficientes — tenta próximo modelo com menos tokens
-        if (eMsg.indexOf('credits') !== -1 || eMsg.indexOf('afford') !== -1 || eMsg.indexOf('credits') !== -1) {
+        if (eMsg.indexOf('credits') !== -1 || eMsg.indexOf('afford') !== -1) {
           mostrarAvisoCreditos();
           lastError = new Error('Creditos insuficientes. Acesse openrouter.ai/settings/credits para adicionar creditos ou aguarde renovacao diaria gratuita.');
           continue;
         }
-
         if (r.status === 400 || r.status === 404 || eMsg.indexOf('No endpoints') !== -1 || eMsg.indexOf('not a valid model') !== -1) {
-          lastError = new Error(eMsg);
-          continue;
+          lastError = new Error(eMsg); continue;
         }
-
         throw new Error(eMsg);
       }
 
@@ -1309,27 +1337,19 @@ async function chamarIA(prompt, max) {
       return txt;
 
     } catch(e) {
-      if (e.message && (
-        e.message.indexOf('No endpoints') !== -1 ||
-        e.message.indexOf('not a valid model') !== -1 ||
-        e.message.indexOf('credits') !== -1 ||
-        e.message.indexOf('afford') !== -1
-      )) {
-        lastError = e;
-        continue;
+      if (e.message && (e.message.indexOf('No endpoints') !== -1 || e.message.indexOf('not a valid model') !== -1 || e.message.indexOf('credits') !== -1 || e.message.indexOf('afford') !== -1)) {
+        lastError = e; continue;
       }
       throw e;
     }
   }
 
-  // Mensagem de erro amigável em português
   var msgFinal = (lastError && lastError.message && (lastError.message.indexOf('Creditos') !== -1 || lastError.message.indexOf('credits') !== -1))
     ? '⚠️ Creditos insuficientes no OpenRouter.\n\nAcesse openrouter.ai/settings/credits para adicionar creditos, ou aguarde a renovacao diaria gratuita.\n\nDica: A conta gratis renova todo dia!'
     : 'Nenhum modelo IA disponivel. Verifique sua chave OpenRouter em Telegram > Config.';
 
   throw new Error(msgFinal);
 }
-// ============================================================
 
 function copiarParaClipboard(texto) {
   return new Promise(function(resolve) {
